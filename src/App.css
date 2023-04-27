@@ -1,0 +1,269 @@
+.App {
+  margin: 0px;
+  padding: 0px;
+}
+
+.Header{
+  background-color: #282c34;
+  text-align: center;
+  font-size: 2rem;
+  color: white; 
+  padding: 0 10px 0 10px;
+  height: 100%;
+  width: 100%;
+}
+
+#map{
+  height: 100vh;
+  width: 100%;
+}
+
+/* Search Bar Component CSS*/
+
+#search__container {
+  position: absolute;
+  top: 10px;
+  left: 50px;
+  z-index: 1;
+}
+
+#opertaions__container {
+  display: flex;
+  flex-direction: row;
+  z-index: 1;
+}
+
+/* set filter container after search container */
+
+#filter__container {
+  position: absolute;
+  top: 75px;
+  left: 20px;
+  z-index: 1;
+}
+#search__input {
+  width: 300px;
+  padding: 10px;
+  border: none;
+  border-radius: 3px 0 0 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-size: 16px;
+  font-weight: 300;
+  color: #555;
+  outline: none;
+  opacity: 0.6;
+}
+
+#search__input:focus {
+  opacity: 0.9;
+}
+
+#search__button {
+  background-color: #4285F4;
+  color: #fff;
+  border: none;
+  border-radius: 0 3px 3px 0;
+  padding: 10px 16px;
+  font-size: 16px;
+  font-weight: 300;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#search__button:hover {
+  background-color: #2b67c1;
+}
+
+.marker {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: red;
+  border: 2px solid white;
+  box-shadow: 0px 0px 5px black;
+}
+
+
+.airport-code {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #0071c5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+#filter__icon{
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.filter__options {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+  margin-top: 1rem;
+	width: 50px;
+	height: 80vh;
+	background-color: #fff;
+	border: 1px solid #000;
+	opacity: 0.1;
+  border-radius: 5px;
+}
+
+.filter__options:hover{
+  opacity: 0.6;
+}
+
+.filter__options img{
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  z-index: 1;
+  margin: 10px;
+}
+
+.filter__options input {
+  margin: 0 5px;
+}
+
+.filter__options label {
+  margin: 0 5px;
+  text-transform: lowercase;
+}
+
+.props__container{
+  position: absolute;
+  top: 10px;
+  left: 450px;
+  z-index: 1;
+}
+
+.prop__options{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+
+/* ... */
+
+.legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-item {
+  width: 10px;
+  height: 10px;
+  margin: 5px 0;
+}
+
+.legend-label {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.legend-value {
+  margin-top: 5px;
+}
+
+#legend__container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+#analytics__box{
+  position: absolute;
+  top: 100px;
+  left: 50px;
+  width: 700px;
+  height: 700px;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px;
+  opacity: 0.8;
+}
+
+#analytics__box:hover{
+  opacity: 1;
+}
+
+#analytics__header{
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-left : 150px;
+}
+
+#analytics__info{
+  width: 250px;
+  height: 250px;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px;
+  opacity: 1;
+  margin: 20px;
+  z-index: 1;
+}
+
+#analytics__info img{
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  z-index: 1;
+}
+
+#analytics_hamburger img{
+  width: 30px;
+  height: 30px;
+  opacity: 1;
+  z-index: 1;
+  top: 20px;
+  cursor: pointer;
+}
+
+#main__filter__title{
+  font-size: 20px;
+  font-weight: bold;
+  color: black;
+}
+
+#main__filter__container{
+  position: absolute;
+  top: 2px;
+  right: 50px;
+  width: 500px;
+  height: auto;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px;
+  opacity: 0.4;
+}
+
+#main__filter__container:hover{
+  opacity: 0.8;
+}
+
+#main__filter__container ul{
+  list-style-type: none;
+  margin-top: 10px;
+  padding: 10px;
+  overflow: hidden;
+}
