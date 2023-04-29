@@ -11,6 +11,7 @@ interface AnalyticsProps {
 
 function AnalyticsComponent(props: AnalyticsProps) {
 
+
   const convertCamelCase = (str: string) => {
     return str
       .split(" ")

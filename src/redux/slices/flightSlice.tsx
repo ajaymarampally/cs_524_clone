@@ -1,18 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 
-interface FlightFilters {
-  [key: string]: string[];
-}
+// interface FlightFilters {
+//   [key: string]: string[];
+// }
 interface FlightState {
   searchTerm: string;
   selectedToggle: string;
   selectedLegend: string;
   LegendMinMax: number[];
   colorScale: any;
-  selectedFilters: FlightFilters;
+  selectedFilters: any;
   regionDelayData: any;
   filteredData: any;
+  chartData1: any;
+  chartData2: any;
 }
 
 const initialState: FlightState = {
@@ -22,13 +24,16 @@ const initialState: FlightState = {
     LegendMinMax: [0, 0],
     colorScale: null,
     selectedFilters: {
-      "state": [],
-      "year": [],
-      "size": [],
-      "carrier": [],
+      "state": {},
+      "year": {},
+      "size": {},
+      "carrier": {},
+      "direction": {"departures": true, "arrival": false},
     },
     regionDelayData: {},
-    filteredData: {}
+    filteredData: {},
+    chartData1: {},
+    chartData2: {}
 };
 
 
@@ -51,7 +56,7 @@ const flightSlice = createSlice({
     set_flight_color_scale(state, action: PayloadAction<any>) {
         state.colorScale = action.payload;
     },
-    set_flight_filters(state, action: PayloadAction<FlightFilters>) {
+    set_flight_filters(state, action: PayloadAction<any>) {
       state.selectedFilters = action.payload;
     },
     set_flight_region_delay_data(state, action: PayloadAction<any>) {
@@ -60,6 +65,12 @@ const flightSlice = createSlice({
     set_flight_filtered_data(state, action: PayloadAction<any>) {
       state.filteredData = action.payload;
     },
+    set_flight_chart_data1(state, action: PayloadAction<any>) {
+      state.chartData1 = action.payload;
+    },
+    set_flight_chart_data2(state, action: PayloadAction<any>) {
+      state.chartData2 = action.payload;
+    },
     reset_flight_slice(state) {
       state.searchTerm = '';
       state.selectedToggle = 'arrival';
@@ -67,13 +78,16 @@ const flightSlice = createSlice({
       state.LegendMinMax = [0, 0];
       state.colorScale = null;
       state.selectedFilters = {
-        "state": [],
-        "year": [],
-        "size": [],
-        "carrier": [],
+        "state": {},
+        "year": {},
+        "size": {},
+        "carrier": {},
+        "direction": {"departures": true, "arrival": false},
       }
       state.regionDelayData = {};
       state.filteredData = {};
+      state.chartData1 = {};
+      state.chartData2 = {};
     }
   },
 });

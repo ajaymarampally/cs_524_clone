@@ -24,7 +24,7 @@ function FilterComponent() {
   return (
     <>
       <div className="filter__container">
-        <img src={filter} alt="filter" id="filter__icon" onClick={handleFilterClick} />
+        {/* <img src={filter} alt="filter" id="filter__icon" onClick={handleFilterClick} /> */}
         {showFilter && (
           <div className="filter__options">
             <div>

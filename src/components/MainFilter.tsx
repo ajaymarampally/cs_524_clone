@@ -21,6 +21,9 @@ function MainFilter() {
     const FiltersStore = useSelector((state: RootState) => state.flight.selectedFilters);
     const regionalDataStore = useSelector((state: RootState) => state.flight.regionDelayData);
 
+    console.log('FiltersStore in main filter',FiltersStore);
+
+
   const carrierDict: { [key: string]: string } = {
     AA: "American Airlines",
     DL: "Delta Air Lines",
@@ -49,17 +52,11 @@ function MainFilter() {
     "2001-12": "December",
   };
 
-  
-  const [selectedFilters, setSelectedFilters] = React.useState<{[key: string]: string[]}>({
-    "state": [],
-    "year": [],
-    "size": [],
-    "carrier": [],
-});
   const [isStateOpen, setIsStateOpen] = React.useState<boolean>(false);
   const [isYearOpen, setIsYearOpen] = React.useState<boolean>(false);
   const [isSizeOpen, setIsSizeOpen] = React.useState<boolean>(false);
   const [isCarrierOpen, setIsCarrierOpen] = React.useState<boolean>(false);
+  const [filtersState, setFiltersState] = React.useState<any>();
   //functions
   const onChange = (e: CheckboxChangeEvent) => {
     const id = e.target.id;
@@ -67,27 +64,40 @@ function MainFilter() {
     console.log(id, value);
     switch (id) {
         case "state":
-            setSelectedFilters((prevState) => ({
+            //set filtersState['state'][value] = !filtersState['state'][value];
+            setFiltersState((prevState: any) => ({
                 ...prevState,
-                state: [...prevState.state, value],
+                state: {
+                    ...prevState.state,
+                    [value]: !prevState.state[value],
+                },
             }));
             break;
         case "year":
-            setSelectedFilters((prevState) => ({
+            setFiltersState((prevState:any) => ({
                 ...prevState,
-                year: [...prevState.year, value],
+                year: {
+                    ...prevState.year,
+                    [value]: !prevState.year[value],
+                }
             }));
             break;
         case "size":
-            setSelectedFilters((prevState) => ({
+            setFiltersState((prevState:any) => ({
                 ...prevState,
-                size: [...prevState.size, value],
+                size:{
+                    ...prevState.size,
+                    [value]: !prevState.size[value],
+                }
             }));
             break;
         case "carrier":
-            setSelectedFilters((prevState) => ({
+            setFiltersState((prevState:any) => ({
                 ...prevState,
-                carrier: [...prevState.carrier, value],
+                carrier:{
+                    ...prevState.carrier,
+                    [value]: !prevState.carrier[value],
+                }
             }));
             break;
         default:
@@ -103,104 +113,126 @@ function MainFilter() {
 
   const handleFilter = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
-    console.log(selectedFilters);
-    FilterFunction(regionalDataStore, selectedFilters)
+    //FilterFunction(regionalDataStore, selectedFilters)
+    dispatch(flight_actions.set_flight_filters(filtersState));
   };
 
 
   //useEffect
+    // React.useEffect(() => {
+    //     //console.log(selectedFilters);
+    //     dispatch(flight_actions.set_flight_filters(selectedFilters));
+    // }, [selectedFilters]);
+
     React.useEffect(() => {
-        //console.log(selectedFilters);
-        dispatch(flight_actions.set_flight_filters(selectedFilters));
-    }, [selectedFilters]);
+        console.log('filters_state',filtersState);
+        //dispatch(flight_actions.set_flight_filters(filtersState));
+    },[filtersState]);
+
+
 
     React.useEffect(() => {
         console.log('filters_store',FiltersStore);
+        setFiltersState(FiltersStore);
     }, [FiltersStore]);
   return (
     <>
-      <div className="row justify-content-center" id="main__filter__title">
-        Filters
-      </div>
       <div className="row">
-        <div className="col-3">
+        <div className="col-2">
             <button
-                className="btn btn-outline-secondary dropdown-toggle"
+                className="btn  btn-outline-light dropdown-toggle"
                 type="button"
                 id="dropdownMenuButton1"
                 onClick={toggleStateOpen}
             >
                 State
             </button>
-            <ul className={`dropdown-menu ${isStateOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
-                {Object.keys(stateMap).map((key, index) => (
-                    <li key={key}>
-                        <Checkbox id="state" value={key} onChange={onChange}>{stateMap[key]}</Checkbox>
-                    </li>
-                ))}
-            </ul>            
+            {
+                filtersState && (
+                    <ul className={`dropdown-menu ${isStateOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    {Object.keys(filtersState['state']).map((key, index) => (
+                        <li key={key}>
+                            <Checkbox id="state" value={key} onChange={onChange}
+                            checked = {filtersState['state'][key]}
+                            >{stateMap[key]}</Checkbox>
+                        </li>
+                    ))}
+                </ul>                
+                )
+            }
         </div>
-        <div className="col-3">
+        <div className="col-2">
             <button
-                className="btn btn-outline-secondary dropdown-toggle"
+                className="btn btn-outline-light dropdown-toggle"
                 type="button"
                 id="dropdownMenuButton1"
                 onClick={toggleYearOpen}
             >
                 Year
             </button>
-            <ul className={`dropdown-menu ${isYearOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
-                {Object.keys(YearDict).map((key, index) => (
-                    <li key={key}>
-                        <Checkbox id="year" value={key} onChange={onChange}>{key}</Checkbox>
-                    </li>
-                ))}
-            </ul>
+            {
+                filtersState && (
+                    <ul className={`dropdown-menu ${isYearOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    {Object.keys(filtersState['year']).map((key, index) => (
+                        <li key={key}>
+                            <Checkbox checked={filtersState['year'][key]} id="year" value={key} onChange={onChange}>{key}</Checkbox>
+                        </li>
+                    ))}
+                </ul>    
+                )
+            }
         </div>
-        <div className="col-3">
+        <div className="col-2">
             <button
-                className="btn btn-outline-secondary dropdown-toggle"
+                className="btn btn-outline-light dropdown-toggle"
                 type="button"
                 id="dropdownMenuButton1"
                 onClick={toggleSizeOpen}
             >
                 Size
             </button>
-            <ul className={`dropdown-menu ${isSizeOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
-                <li>
-                    <Checkbox id="size" value="small" onChange={onChange}>Small</Checkbox>
-                </li>
-                <li>
-                    <Checkbox id="size" value="medium" onChange={onChange}>Medium</Checkbox>
-                </li>
-                <li>
-                    <Checkbox id="size" value="large" onChange={onChange}>Large</Checkbox>
-                </li>
-            </ul>
+            {
+                filtersState && (
+                    <ul className={`dropdown-menu ${isSizeOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    {Object.keys(filtersState['size']).map((key, index) => (
+                        <li key={key}>
+                            <Checkbox checked={filtersState['size'][key]} id="size" value={key} onChange={onChange}>{key}</Checkbox>
+                        </li>
+                    ))}
+                    </ul>    
+                )
+            }
         </div>
-        <div className="col-3">
+        <div className="col-2">
             <button
-                className="btn btn-outline-secondary dropdown-toggle"
+                className="btn btn-outline-light dropdown-toggle"
                 type="button"
                 id="dropdownMenuButton1"
                 onClick={toggleCarrierOpen}
             >
                 Carrier
             </button>
-            <ul className={`dropdown-menu ${isCarrierOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
-                {Object.keys(carrierDict).map((key, index) => (
-                    <li key={key}>
-                        <Checkbox id="carrier" value={key} onChange={onChange}>{carrierDict[key]}</Checkbox>
-                    </li>
-                ))}
-            </ul>
+            {
+                filtersState && (
+                    <ul className={`dropdown-menu ${isCarrierOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    {Object.keys(filtersState['carrier']).map((key, index) => (
+                        <li key={key}>
+                            <Checkbox checked={filtersState['carrier'][key]} id="carrier" value={key} onChange={onChange}>{key}</Checkbox>
+                        </li>
+                    ))}
+                    </ul>    
+                )
+            }
         </div>
-        <div className="d-flex my-2 justify-content-center">
+        <div className="col-2">
+        <div className="d-flex justify-content-center">
             <div>
-                <button onClick={handleFilter} type="button">
-                    Apply Filters
+                <button id="apply__button" onClick={handleFilter} type="button">
+                    Apply
                 </button>
             </div>
+        </div>
+
         </div>
       </div>
     </>
