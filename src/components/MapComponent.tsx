@@ -6,10 +6,10 @@ import TileLayer from "ol/layer/Tile";
 import SearchBar from "./SearchBar";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { makeStyles } from "@material-ui/core/styles";
-import { useGeographic } from "ol/proj";
+import { Projection, useGeographic } from "ol/proj";
 import Overlay from "ol/Overlay";
 import FilterComponent from "./FilterComponent";
-import { LineString } from "ol/geom";
+import { Circle, LineString } from "ol/geom";
 import Feature from "ol/Feature";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
@@ -17,9 +17,10 @@ import * as d3 from "d3";
 import { scaleSequential } from "d3-scale";
 import { interpolateRdBu } from "d3-scale-chromatic";
 import AnalyticsComponent from "./AnalyticsComponent";
+import SelectInteraction from 'ol/interaction/Select';
 import axios from "axios";
 import { GeoJSON } from 'ol/format';
-import { Fill, Stroke, Style } from 'ol/style';
+import { Fill, Icon, Stroke, Style } from 'ol/style';
 import FilterPropsComponent from "./FilterProps";
 import { OSM } from 'ol/source';
 import { useDispatch, useSelector } from "react-redux";
@@ -28,6 +29,15 @@ import LegendComponent from "./LegendComponent";
 import stateMap from "./util/StateMap";
 import { flight_actions } from "../redux/slices/flightSlice";
 import MainFilter from "./MainFilter";
+import StackedBarChart from "./graphs/StackedBarChart";
+import BarChartBorderRadius from "./graphs/BarChartBorderRadius";
+import menu from "../img/menu.png";
+import PieChart from "./graphs/PieChart";
+import { pointerMove } from "ol/events/condition";
+import CircleStyle from "ol/style/Circle";
+import {fromLonLat} from 'ol/proj';
+import Point from 'ol/geom/Point';
+import location from "../img/location-pin.png";
 
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
@@ -53,8 +63,11 @@ function MapComponent() {
   const [airportInfo, setAirportInfo] = useState<any>(null);
   const [airportName, setAirportName] = useState<string>('');
   const [regionDelayData, setRegionDelayData] = useState<any>({});
-  const [regionMin, setRegionMin] = useState<number[]>([0,0]);
-  const [regionMax, setRegionMax] = useState<number[]>([0,0]);
+  const [chartData1, setChartData1] = useState<any>(null);
+  const [consolidatedChartData, setConsolidatedChartData] = useState<any>(null);
+  const [showGraphs, setShowGraphs] = useState<boolean>(false);
+  const [SelectedState, setSelectedState] = useState<string>("");
+
 
   //colorscaleProps of type d3.scaleSequential(d3.interpolateRgb("rgba(139, 0, 0, 0.5)", "rgba(255, 192, 203, 0.5)")).domain([min, max])
 
@@ -66,14 +79,70 @@ function MapComponent() {
   const dispatch = useDispatch();
   const mapStore = useSelector((state: RootState) => state);
   const selectedToggle = mapStore.flight.selectedToggle;
+  const selectedFiltersStore = mapStore.flight.selectedFilters;
   const regionalDataStore = mapStore.flight.regionDelayData;
   const [selectedFilters, setSelectedFilters] = React.useState<{[key: string]: string[]}>({
     "state": [],
     "year": [],
     "size": [],
     "carrier": [],
+    "direction": [],
 });
 
+  const [globalFilter, setGlobalFilter] = React.useState<any>({
+    "state": {},
+    "year": {},
+    "size": {},
+    "carrier": {},
+    "direction": {"departures": true, "arrival": false},
+  });
+
+
+  const pie_data = [
+    {
+      "id": "make",
+      "label": "make",
+      "value": 410,
+      "color": "hsl(60, 70%, 50%)"
+    },
+    {
+      "id": "elixir",
+      "label": "elixir",
+      "value": 470,
+      "color": "hsl(318, 70%, 50%)"
+    },
+    {
+      "id": "go",
+      "label": "go",
+      "value": 295,
+      "color": "hsl(201, 70%, 50%)"
+    },
+    {
+      "id": "c",
+      "label": "c",
+      "value": 529,
+      "color": "hsl(212, 70%, 50%)"
+    },
+    {
+      "id": "lisp",
+      "label": "lisp",
+      "value": 327,
+      "color": "hsl(114, 70%, 50%)"
+    }
+  ]
+
+  
+
+  //useEffect
+  useEffect(() => {
+    //console.log("global filter map component", globalFilter);
+    dispatch(flight_actions.set_flight_filters(globalFilter));
+  }, [globalFilter]);
+
+
+  const handleFilterClick = () =>{
+    setShowGraphs(!showGraphs);
+  }
 
   //functions
   async function parseData(newJsonData:any, regionDelayTree:any) {
@@ -82,14 +151,15 @@ function MapComponent() {
     let maxArrDelay = -999999999999;
     let minDepDelay = 999999999999; 
     let maxDepDelay = -999999999999;
-    // let FiltersData = {
-    //   f_iso_regions: {},
-    //   f_year_month : {},
-    //   f_unique_carrier :{},
-    //   f_size : {},
-    // };
+
+//     const newGlobalFilter: { [key: string]: object } = {
+//       "state": {},
+//       "year": {},
+//       "size": {},
+//       "carrier": {},
+// //      "direction": {"departures": true, "arrival": false},
+//     }
     
-  
     newJsonData.forEach((item:any) => {
         const { iso_region, year_month, unique_carrier, size ,delay_type,delay} = item;
         if (!newTree[iso_region]) {
@@ -114,21 +184,35 @@ function MapComponent() {
             minDepDelay = Math.min(minDepDelay, delay);
             maxDepDelay = Math.max(maxDepDelay, delay);
         }
-  
-  
-        //filter data logic
-  
-        // FiltersData[f_iso_regions][iso_region]===undefined?FiltersData[f_iso_regions][iso_region]=1:FiltersData[f_iso_regions][iso_region]+=1;
-  
-        // FiltersData[f_year_month][year_month]===undefined?FiltersData[f_year_month][year_month]=1:FiltersData[f_year_month][year_month]+=1;
-  
-        // FiltersData[f_unique_carrier][unique_carrier]===undefined?FiltersData[f_unique_carrier][unique_carrier]=1:FiltersData[f_unique_carrier][unique_carrier]+=1;
-  
-        // FiltersData[f_size][size]===undefined?FiltersData[f_size][size]=1:FiltersData[f_size][size]+=1;
         
+        // newGlobalFilter['state'][iso_region] = true;
+        // newGlobalFilter['year'][year_month] = true;
+        // newGlobalFilter['size'][size] = true;
+        // newGlobalFilter['carrier'][unique_carrier] = true;
+
+        setGlobalFilter((prevState:any) => {
+          return {
+            ...prevState,
+            state: {
+              ...prevState.state,
+              [iso_region]: true
+            },
+            year: {
+              ...prevState.year,
+              [year_month]: true
+            },
+            size: {
+              ...prevState.size,
+              [size]: true
+            },
+            carrier: {
+              ...prevState.carrier,
+              [unique_carrier]: true
+            },
+          }
+        });        
     });
-    setRegionMin([minArrDelay,minDepDelay]);
-    setRegionMax([maxArrDelay,maxDepDelay]);
+    //console.log(newGlobalFilter)
     setRegionDelayData(newTree);
   
   }
@@ -249,41 +333,78 @@ function MapComponent() {
     return [airport.longitude, airport.latitude]
   };
 
-  //function to draw arcs
-  // const drawArc = (start: number[], end: number[], lineDash: number[]) => {
-  //   const arc = new LineString([start, end]);
-  //   const arcFeature = new Feature({
-  //     geometry: arc,
-  //     name: "Arc",
-  //   });
+  //function to make chartData
+  const buildChartData1 = (state:string,year:string,carrier:string,size:string,delay:number) =>{
+    if(!chartData1.hasOwnProperty(size) || !chartData1[size].hasOwnProperty(year)) {
+      setChartData1((prevState:any) => {
+        return {
+          ...prevState,
+          [size]: {
+            ...prevState[size],
+            [year]: [0, 0]
+          }
+        }
+      });
+    }
+    
+    //chartData1[size][year][0] += delay;
+    //chartData1[size][year][1] += 1;
 
-  //   const arcStyle = new Style({
-  //     stroke: new Stroke({
-  //       color: colorScale(Math.random() * 100),
-  //       width: 2,
-  //       lineDash: lineDash,
-  //     }),
-  //   });
-  //   arcFeature.setStyle(arcStyle);
-  //   const vectorSource = new VectorSource({
-  //     features: [arcFeature],
-  //   });
-  //   const vectorLayer = new VectorLayer({
-  //     source: vectorSource,
-  //   });
-  //   map.current?.addLayer(vectorLayer);
+    setChartData1((prevState:any) => {
+      const prevSize = prevState.hasOwnProperty(size) ? prevState[size] : {};
+      return {
+        ...prevState,
+        [size]: {
+          ...prevSize,
+          [year]: [prevSize.hasOwnProperty(year) ? prevSize[year][0] + delay : delay, prevSize.hasOwnProperty(year) ? prevSize[year][1] + 1 : 1]
+        }
+      }
+    });
+  }
 
-  //   // //event handler for arc click and hover events
-  //   // map.current?.on("click", (evt) => {
-  //   //   const features = map.current?.getFeaturesAtPixel(evt.pixel);
-  //   //   if (features) {
-  //   //     const feature = features[0];
-  //   //     if (feature.get("name") === "Arc") {
-  //   //       console.log("clicked on arc");
-  //   //     }
-  //   //   }
-  //   // });
-  // };
+  const consolidateChartData = (chartData:any) =>{
+    let newChartData:any = {};
+    Object.keys(chartData).forEach((size) => {
+      newChartData[size] = {};
+      Object.keys(chartData[size]).forEach((year) => {
+        newChartData[size][year] = chartData[size][year][0]/chartData[size][year][1];
+      });
+    });
+    return newChartData;
+
+  }
+
+  const drawIcon = (data:any) => {
+  
+  }
+
+  const drawCircle = (data:any,zoom:any,map:any) => {
+    Object.keys(data).forEach((key) => {
+      let longitude = data[key].longitude;
+      let latitude = data[key].latitude;
+      let total_count = data[key].total_count;
+      let taxi = data[key].taxi;
+      let delay = data[key].delay;
+      console.log('longitude',longitude,'latitude',latitude,'total_count',total_count,'taxi',taxi,'delay',delay)
+      var projection:any = d3.geoMercator()
+      var geoGenerator = d3.geoPath().projection(projection);
+      
+      var svg = d3.select(map.getViewport()).select('svg');
+      var g = svg.append("g");
+      var feature = g.selectAll("circle")
+        .append("circle")
+        .attr("cx", projection([longitude, latitude])[0])
+        .attr("cy", projection([longitude, latitude])[1])
+        .attr("r", 10)
+        .style("fill", "red")
+        .style("opacity", 0.85)
+      
+      //add to the map
+      map.addLayer(feature);
+
+
+});
+  }
 
   const drawDelay = ( seletedToggle:string ) => {
      //console.log('drawDelay Function',seletedToggle);
@@ -292,62 +413,47 @@ function MapComponent() {
       let max = -Infinity;
       let avgDict : {[key:string]:number} = {};
 
+      setChartData1({});
+
       Object.keys(regionDelayData).forEach((key) => {
-        //console.log(key);
-        //add key to selectedFilters['state']
-        //check if selectedFilters['state'] already has the key , if not then add it
-        if(!selectedFilters['state'].includes(key)){
-          setSelectedFilters((prevState) => ({
-            ...prevState,
-            state: [...prevState.state, key],
-          }));    
-        } 
+
         let value:number = 0;
         let cnt = 0;
-        for (let year in regionDelayData[key]) {
-          if(!selectedFilters['year'].includes(year)){
-            setSelectedFilters((prevState) => ({
-              ...prevState,
-              year: [...prevState.year, year],
-            }));  
-          }
-          for(let carrier in regionDelayData[key][year]){
-            if(!selectedFilters['carrier'].includes(carrier)){
-              setSelectedFilters((prevState) => ({
-                ...prevState,
-                carrier: [...prevState.carrier, carrier],
-              }));  
+        if(selectedFiltersStore['state'][key]){
+          for (let year in regionDelayData[key]) {
+            if(selectedFiltersStore['year'][year]){
+              for(let carrier in regionDelayData[key][year]){
+                if(selectedFiltersStore['carrier'][carrier]){
+                  for(let size in regionDelayData[key][year][carrier]){
+                    if(regionDelayData[key][year][carrier][size]['arr_delay'] != null){
+                      //parse the value to float and add it to value
+                      value += parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']);
+                      //increment cnt
+                      cnt += 1;
+                      //build chartData1
+                      buildChartData1(key,year,carrier,size,parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']));
+                      //update min and max
+                    }
+                    else{
+                      //add 0 to value
+                      value += 0;
+                    }
+                  }  
+                }
+              }  
             }
-            for(let size in regionDelayData[key][year][carrier]){
-              if(!selectedFilters['size'].includes(size)){
-                setSelectedFilters((prevState) => ({
-                  ...prevState,
-                  size: [...prevState.size, size],
-                }));  
-              }
-              //if regionDelayData[key][year][carrier][size]['arr_delay'] is not null then add it to value
-              if(regionDelayData[key][year][carrier][size]['arr_delay'] != null){
-                //parse the value to float and add it to value
-                value += parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']);
-                //increment cnt
-                cnt += 1;
-                //update min and max
-              }
-              else{
-                //add 0 to value
-                value += 0;
-              }
-            }
-          }
+          }  
         }
         //calculate average of valueArr
         //console.log(value,cnt)
-        let avg = value / cnt;
-        //update min and max
-        min = Math.min(min, avg);
-        max = Math.max(max, avg);
-        //update avgDict
-        avgDict[key] = avg;
+        if(value>0){
+          let avg = value / cnt;
+          //update min and max
+          min = Math.min(min, avg);
+          max = Math.max(max, avg);
+          //update avgDict
+          avgDict[key] = avg;  
+        }
       });
       Object.keys(regionDelayData).forEach((key) => {
         const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max]);
@@ -367,37 +473,55 @@ function MapComponent() {
        //console.log(key);
        let value:number = 0;
        let cnt = 0;
-       for (let year in regionDelayData[key]) {
-         for(let carrier in regionDelayData[key][year]){
-           for(let size in regionDelayData[key][year][carrier]){
-             //if regionDelayData[key][year][carrier][size]['arr_delay'] is not null then add it to value
-             if(regionDelayData[key][year][carrier][size]['dep_delay'] != null){
-               //parse the value to float and add it to value
-               value += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
-               cnt += 1;
-                //update min and max
-             }
-             else{
-               //add 0 to value
-               value += 0;
-             }
-           }
-         }
+      console.log('key',key,selectedFiltersStore['state'][key])
+       if(selectedFiltersStore['state'][key])
+       {
+        for (let year in regionDelayData[key]) {
+          if(selectedFiltersStore['year'][year]){
+            for(let carrier in regionDelayData[key][year]){
+              if(selectedFiltersStore['carrier'][carrier]){
+                for(let size in regionDelayData[key][year][carrier]){
+                  //if regionDelayData[key][year][carrier][size]['arr_delay'] is not null then add it to value
+                  if(regionDelayData[key][year][carrier][size]['dep_delay'] != null){
+                    //parse the value to float and add it to value
+                    value += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
+                    cnt += 1;
+                    //console.log('value',value)
+                     //update min and max
+                      //build chartData1
+                      buildChartData1(key,year,carrier,size,parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']));
+                  }
+                  else{
+                    //add 0 to value
+                    value += 0;                    
+                  }
+                }  
+              }
+            }  
+          }
+        } 
        }
        //calculate average of valueArr
        //console.log(value,cnt)
        //create a color scale with opacity 0.5
-       let avg = value / cnt;
-       //update min and max based on avg
-        min = Math.min(min, avg);
-        max = Math.max(max, avg);
-        //update avgDict
-        avgDict[key] = avg;
+       if(value>0){
+        let avg = value / cnt;
+        //update min and max based on avg
+         min = Math.min(min, avg);
+         max = Math.max(max, avg);
+         //update avgDict
+         avgDict[key] = avg; 
+       }
      });
+     console.log('avgDict',avgDict)
+     console.log('min',min,'max',max)
      Object.keys(regionDelayData).forEach((key) => {
       const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([min, max]);
       //console.log('avg for ',key,'is ',avg);
-      drawStateColor(stateMap[key], colorScaleDeparture(avgDict[key]));
+      if(avgDict[key]!==null){
+        console.log('key',key,avgDict[key])
+        drawStateColor(stateMap[key], colorScaleDeparture(avgDict[key]));
+      }
 
     });
     dispatch(flight_actions.set_flight_legend("departure"))
@@ -407,7 +531,18 @@ function MapComponent() {
     }
   };
 
+  // useEffect
+  useEffect(() => {
+    setConsolidatedChartData(chartData1);
+  },[chartData1]
+  );
 
+  //useEffect consolidated data
+  useEffect(() => {
+    console.log('consolidatedChartData',consolidatedChartData)
+    dispatch(flight_actions.set_flight_chart_data1(consolidatedChartData))
+  },[consolidatedChartData]
+  );
 
   // useEffect
   useEffect(() => {
@@ -432,19 +567,70 @@ function MapComponent() {
         }
       });
 
+      const statesSource = new VectorSource({
+        url: 'https://raw.githubusercontent.com/openlayers/openlayers/main/examples/data/geojson/us-states.geojson',
+        format: new GeoJSON(),
+      });
+
+      const statesLayer = new VectorLayer({
+        source: statesSource,
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.6)',
+          }),
+          stroke: new Stroke({
+            color: '#319FD3',
+            width: 1,
+          }),
+        }),
+      });
+
       map.current = new Map({
         target: mapRef.current,
         //update the layers to make water black and land grey
-        layers: [
-          tile,    ],
-
-        
-
-
+        layers: [tile,statesLayer],        
         view: new View({
           center: [-98.583333, 39.833333],
           zoom: 4,
         }),
+      });
+
+
+      // Add an event listener to the Select interaction to listen for feature selection
+      const select = new SelectInteraction({
+        //on feature select, set the selected state
+        
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)',
+          }),
+          stroke: new Stroke({
+            color: '#319FD3',
+            width: 1,
+          }),
+        }),
+      });
+
+      map.current.addInteraction(select);
+
+      select.on('select', (event: { selected: string | any[]; }) => {
+        if (event.selected.length > 0) {
+          setSelectedState(event.selected[0].get('name'));
+          // Zoom to the selected feature
+          if(map.current){
+            map.current.getView().fit(event.selected[0].getGeometry().getExtent(), { padding: [20, 20, 20, 20],
+            maxZoom:7,
+            duration: 1000,
+            });
+            let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
+            console.log(url)
+            axios.get(url).then((res) => {
+              console.log(res.data);
+              drawCircle(res.data,map.current?.getView().getZoom() as number,map.current?map.current:undefined);
+            });    
+    
+          }
+        }
       });
 
       // set false after map is loaded
@@ -452,24 +638,6 @@ function MapComponent() {
         setIsLoading(false);
       });
     }
-
-    //drawCountryColor(country_dict);
-    //drawCountryColor();
-    //drawStateColor(state_dict);
-
-    //draw the arcs
-    // for (const key in arcInBoundHash) {
-    //   setTimeout(() => {
-    //     drawArc(arcInBoundHash[key][0], arcInBoundHash[key][1], [0, 0]);
-    //   }, 2000);
-    // }
-
-    // for (const key in arcOutBoundHash) {
-    //   setTimeout(() => {
-    //     drawArc(arcOutBoundHash[key][0], arcOutBoundHash[key][1], [0, 0]);
-    //   }, 2000);
-    // }
-
     return () => {
       if (map) {
         map.current?.setTarget(undefined);
@@ -550,10 +718,27 @@ function MapComponent() {
   // }, [colorScaleProps]);
 
 
-  useEffect(() => {
-    console.log("selectedFilters", selectedFilters);
-  }, [selectedFilters]);
+  // useEffect(() => {
+  //   console.log("selectedFilters", selectedFilters);
+  // }, [selectedFilters]);
 
+
+  useEffect(() => {
+    console.log("selectedFiltersStore", selectedFiltersStore);
+    drawDelay(selectedToggle);
+  }, [selectedFiltersStore]);
+
+
+  useEffect(() => {
+    console.log("selectedState", SelectedState);
+    //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
+    let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
+    console.log(url)
+    axios.get(url).then((res) => {
+      console.log(res.data);
+      //drawCircle(res.data)
+    });
+  }, [SelectedState]);
   
   return (
     <>
@@ -583,6 +768,20 @@ function MapComponent() {
         )}
         <div id="main__filter__container">
           <MainFilter/>
+        </div>
+        <div>
+          <img src={menu} alt="menu" id="filter__icon" onClick={handleFilterClick} />
+          {showGraphs && (
+            <>
+              <div id="graph__container">
+                {/* <StackedBarChart/> */}
+                <BarChartBorderRadius/>
+              </div>
+              <div id="graph__container_2">
+                <PieChart data={pie_data}/>
+              </div>
+            </>
+          )}  
         </div>
       </div>
     </>

@@ -45,6 +45,7 @@
   width: 300px;
   padding: 10px;
   border: none;
+  height: 48.5px;
   border-radius: 3px 0 0 3px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   font-size: 16px;
@@ -65,6 +66,7 @@
   border-radius: 0 3px 3px 0;
   padding: 10px 16px;
   font-size: 16px;
+  height: 48.5px;
   font-weight: 300;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -97,11 +99,21 @@
   border-radius: 4px;
 }
 
-#filter__icon{
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  z-index: 1;
+#filter__icon {
+	width: 40px;
+	height: 40px;
+	cursor: pointer;
+	position: absolute;
+	top: 75px;
+	left: 570px;
+	background: white;
+	padding: 3px;
+  opacity: 0.4;
+  border-radius: 8px;
+}
+
+#filter__icon:hover{
+  opacity: 1;
 }
 
 .filter__options {
@@ -244,17 +256,17 @@
   color: black;
 }
 
-#main__filter__container{
-  position: absolute;
-  top: 2px;
-  right: 50px;
-  width: 500px;
-  height: auto;
-  background-color: #fff;
-  border: 1px solid #000;
-  border-radius: 5px;
-  padding: 10px;
-  opacity: 0.4;
+#main__filter__container {
+	position: absolute;
+	top: 65px;
+	left: 45px;
+	width: 500px;
+	height: 58.5px;
+	background-color: #333333;
+	border: 1px solid #000;
+	border-radius: 15px;
+	padding: 10px;
+	opacity: 0.7;
 }
 
 #main__filter__container:hover{
@@ -266,4 +278,56 @@
   margin-top: 10px;
   padding: 10px;
   overflow: hidden;
+}
+
+#graph__container {
+  position: absolute;
+  top: 120px;
+  width: 650px;
+  height: 400px;
+  background-color: #333333;
+  display: block;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #000;
+  border-radius: 15px;
+  opacity: 0.5;
+}
+
+#graph__container_2 {
+  position: absolute;
+  top: 530px;
+  width: 650px;
+  height: 400px;
+  background-color: #333333;
+  display: block;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #000;
+  border-radius: 15px;
+  opacity: 0.5;
+}
+
+#graph__container:hover{
+  opacity: 1;
+}
+
+#graph__container_2:hover{
+  opacity: 1;
+}
+
+#apply__button {
+	position: absolute;
+	/* top: 10px; */
+	right: 20px;
+	width: 100px;
+	height: 40px;
+	background-color: white;
+	border: 1px solid #000;
+	border-radius: 15px;
+	/* padding: 10px; */
+	opacity: 0.7;
+	cursor: pointer;
+	font-weight: bold;
+	/* text-align: center; */
 }
