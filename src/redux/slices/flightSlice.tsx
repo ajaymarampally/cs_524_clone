@@ -9,6 +9,7 @@ interface FlightState {
   selectedToggle: string;
   selectedLegend: string;
   LegendMinMax: number[];
+  selectedState: string;
   colorScale: any;
   selectedFilters: any;
   regionDelayData: any;
@@ -22,6 +23,7 @@ const initialState: FlightState = {
     selectedToggle: 'arrival',
     selectedLegend: 'arrival',
     LegendMinMax: [0, 0],
+    selectedState: '',
     colorScale: null,
     selectedFilters: {
       "state": {},
@@ -53,6 +55,9 @@ const flightSlice = createSlice({
     set_flight_legend_minmax(state, action: PayloadAction<number[]>) {
         state.LegendMinMax = action.payload;
     },
+    set_flight_selected_state(state, action: PayloadAction<string>) {
+        state.selectedState = action.payload;
+    },
     set_flight_color_scale(state, action: PayloadAction<any>) {
         state.colorScale = action.payload;
     },
@@ -77,6 +82,7 @@ const flightSlice = createSlice({
       state.selectedLegend = 'arrival';
       state.LegendMinMax = [0, 0];
       state.colorScale = null;
+      state.selectedState = '';
       state.selectedFilters = {
         "state": {},
         "year": {},

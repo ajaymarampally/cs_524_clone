@@ -113,6 +113,16 @@ const stateMap: { [key: string]: string } = {
   "Puerto Rico": "US-PR",
   "United States Minor Outlying Islands": "US-UM",
   "Virgin Islands: U.S.": "US-VI",
+  AA: "American Airlines",
+  DL: "Delta Air Lines",
+  UA: "United Airlines",
+  HP: "America West Airlines",
+  NW: "Northwest Airlines",
+  WN: "Southwest Airlines",
+  US: "US Airways",
+  CO: "Continental Airlines",
+  AS: "Alaska Airlines",
+  MQ: "American Eagle Airlines"
 };
 
 export default stateMap;

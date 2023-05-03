@@ -331,3 +331,29 @@
 	font-weight: bold;
 	/* text-align: center; */
 }
+
+#tooltip__container{
+  position: absolute;
+  top: 100px;
+  right: 50px;
+  width: 500px;
+  height: auto;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px;
+  opacity: 0.6;
+  z-index: 2;
+}
+
+#tooltip__container:hover{
+  opacity: 1;
+}
+
+#tooltip__header{
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin: 0 10px 0 10px;
+}
+
