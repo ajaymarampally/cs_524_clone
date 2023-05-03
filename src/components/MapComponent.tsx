@@ -10,7 +10,7 @@ import { Projection, useGeographic } from "ol/proj";
 import Overlay from "ol/Overlay";
 import FilterComponent from "./FilterComponent";
 import { Circle, LineString } from "ol/geom";
-import Feature from "ol/Feature";
+import Feature, { FeatureLike } from "ol/Feature";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import * as d3 from "d3";
@@ -22,7 +22,7 @@ import axios from "axios";
 import { GeoJSON } from 'ol/format';
 import { Fill, Icon, Stroke, Style } from 'ol/style';
 import FilterPropsComponent from "./FilterProps";
-import { OSM } from 'ol/source';
+import { OSM, Source } from 'ol/source';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/reduxRoot";
 import LegendComponent from "./LegendComponent";
@@ -38,6 +38,11 @@ import CircleStyle from "ol/style/Circle";
 import {fromLonLat} from 'ol/proj';
 import Point from 'ol/geom/Point';
 import location from "../img/location-pin.png";
+import { Pixel } from "ol/pixel";
+import MapBrowserEvent from 'ol/MapBrowserEvent';
+import Layer from "ol/renderer/Layer";
+import { features } from "process";
+import BarChart from "./graphs/BarChart";
 
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
@@ -66,8 +71,9 @@ function MapComponent() {
   const [chartData1, setChartData1] = useState<any>(null);
   const [consolidatedChartData, setConsolidatedChartData] = useState<any>(null);
   const [showGraphs, setShowGraphs] = useState<boolean>(false);
-  const [SelectedState, setSelectedState] = useState<string>("");
-
+  const [SelectedState, setSelectedState] = useState<any>(null);
+  const [averageDelayArrival, setAverageDelayArrival] = useState<{[key:string]:number}>({});
+  const [averageDelayDeparture, setAverageDelayDeparture] = useState<{[key:string]:number}>({});
 
   //colorscaleProps of type d3.scaleSequential(d3.interpolateRgb("rgba(139, 0, 0, 0.5)", "rgba(255, 192, 203, 0.5)")).domain([min, max])
 
@@ -81,6 +87,9 @@ function MapComponent() {
   const selectedToggle = mapStore.flight.selectedToggle;
   const selectedFiltersStore = mapStore.flight.selectedFilters;
   const regionalDataStore = mapStore.flight.regionDelayData;
+  const colorScaleMinMaxStore = mapStore.flight.LegendMinMax;
+
+
   const [selectedFilters, setSelectedFilters] = React.useState<{[key: string]: string[]}>({
     "state": [],
     "year": [],
@@ -374,37 +383,184 @@ function MapComponent() {
 
   }
 
-  const drawIcon = (data:any) => {
+  const showTooltip = (data: any) => {
+    // Get reference to the tooltip container element
+    const tooltipContainer = document.getElementById('tooltip__container');
+    //set the z-index of the tooltip container to 1 to show it
+    tooltipContainer?.style.setProperty('z-index', '1');
+    
+    //change the className from d-none to d-block to show the tooltip
+    tooltipContainer?.classList.remove('d-none');
+
+    // Update the class of the tooltip container to show it
+    if (tooltipContainer) {
+
+      // const tooltipData = regionDelayData.find((region: { state: string; }) => {
+      //   return region.state === stateMap[SelectedState];
+      // });
+      let airlines: string[] = [];
+      let airlineDelay: any = {};
+      
+      const tooltipdata = (regionDelayData[stateMap[SelectedState]])
+      console.log('tooltipdata',tooltipdata);
+
+
+
+
+      //convert tooltipdata to an array of objects
+      Object.keys(tooltipdata).forEach((year) => {
+        Object.keys(tooltipdata[year]).forEach((carrier) => {
+           if(!airlines.includes(carrier)){
+             airlines.push(carrier);
+           }
+           let value:number = 0;
+           let cnt:number = 0;
+           let searchTerm:string = selectedToggle ==='arrival'? 'arr_delay' : 'dep_delay';
+           Object.keys(tooltipdata[year][carrier]).forEach((size) => {
+            if(tooltipdata[year][carrier][size][searchTerm]!=null){
+              value += parseFloat(tooltipdata[year][carrier][size][searchTerm]);
+              cnt += 1;                
+          }
+          else{
+            value += 0;
+            cnt += 1;
+          }
+          })
+          if(value>0){
+            if(!airlineDelay.hasOwnProperty(carrier)){
+              airlineDelay[carrier] = [];
+              airlineDelay[carrier].push([value/cnt]);
+            }
+            else{
+              airlineDelay[carrier].push([value/cnt]);
+            }
+          }
+          ;
+          });
+      });
+      let airlineDelayRounded:any = {};
+
+      Object.keys(airlineDelay).forEach((carrier) => {
+        let value:number = 0;
+        let cnt:number = 0;
+        Object.keys(airlineDelay[carrier]).forEach((year) => {
+          value += parseFloat(airlineDelay[carrier][year][0]);
+          cnt += 1;
+        });
+        airlineDelayRounded[carrier] = Math.round(value/cnt * 100)/100;
+      });
+
+      console.log('airlineDelay',airlineDelayRounded);
+      // Add content to the tooltip container
+
+
+      tooltipContainer.innerHTML = `
+        <div id="tooltip__header">${SelectedState}</div>
+        <div id="tooltip__body">
+          <div>Total Arrival Delay: ${Math.round(averageDelayArrival[stateMap[SelectedState]] * 100)/100}</div>
+          <div>Total Months: ${Object.keys(tooltipdata).length}</div>
+          <div id="tooltip__header">Carrier Average Delays</div>
+          <div id="tooltip__table__body" class="table table-hover table-bordered">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Carrier</th>
+                  <th scope="col">Average Delay</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${airlines.map((airline) => {
+                  return `
+                    <tr>
+                      <td>${stateMap[airline]}</td>
+                      <td>${airlineDelayRounded[airline]}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>              
+              </table>
+          </div>
+        </div>
+      `;
+    }
+  };
   
-  }
+  const showAirportTooltip = (data: any) => {
+    // Get reference to the tooltip container element
+    const tooltipContainer = document.getElementById('tooltip__container');
+    //set the z-index of the tooltip container to 1 to show it
+    tooltipContainer?.style.setProperty('z-index', '1');
+    
+    //change the className from d-none to d-block to show the tooltip
+    tooltipContainer?.classList.remove('d-none');
 
-  const drawCircle = (data:any,zoom:any,map:any) => {
-    Object.keys(data).forEach((key) => {
-      let longitude = data[key].longitude;
-      let latitude = data[key].latitude;
-      let total_count = data[key].total_count;
-      let taxi = data[key].taxi;
-      let delay = data[key].delay;
-      console.log('longitude',longitude,'latitude',latitude,'total_count',total_count,'taxi',taxi,'delay',delay)
-      var projection:any = d3.geoMercator()
-      var geoGenerator = d3.geoPath().projection(projection);
+    // Update the class of the tooltip container to show it
+    if (tooltipContainer) {
       
-      var svg = d3.select(map.getViewport()).select('svg');
-      var g = svg.append("g");
-      var feature = g.selectAll("circle")
-        .append("circle")
-        .attr("cx", projection([longitude, latitude])[0])
-        .attr("cy", projection([longitude, latitude])[1])
-        .attr("r", 10)
-        .style("fill", "red")
-        .style("opacity", 0.85)
-      
-      //add to the map
-      map.addLayer(feature);
+      // Add content to the tooltip container
+      tooltipContainer.innerHTML = `
+        <div class="tooltip__header">${airportName} (${airportCode})</div>
+        <div class="tooltip__body">
+          <div>Year: ${data.year}</div>
+          <div>Delay: ${data.delay}</div>
+        </div>
+      `;
+    }
 
+  };
 
-});
-  }
+  
+  const drawCircles = (data: any[]) => {
+    //clear all previous layers except the basemap
+    map.current?.getLayers().forEach((layer) => {
+      if (layer instanceof VectorLayer && layer.get('id') === 'airport') {
+        console.log('removing layer',layer.get('id'))
+        map.current?.removeLayer(layer);
+      }
+    });
+  
+    data.forEach((d) => {
+      console.log('drawing cirlce for',d.airport_name,d.longitude,d.latitude)
+      const center = [d.longitude, d.latitude];
+      const radius = (d.delay - colorScaleMinMaxStore[0])/(colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
+      const color = [255, 0, 0, 0.25];
+  
+      const circle = new Circle(center, radius*10);
+      const style = new Style({
+        fill: new Fill({ color: color }),
+        stroke: new Stroke({ color: color, width: 2 })
+      });
+      const feature = new Feature(circle);
+      feature.setStyle(style);
+  
+      const vectorSource = new VectorSource({ features: [feature] });
+      const vectorLayer = new VectorLayer({ source: vectorSource , zIndex: 2 });
+      vectorLayer.set('id', 'airport');
+  
+      //add a event listener to show the tooltip when the user clicks on the circle
+      vectorLayer.on('change', (e:any) => {
+        if (e.target instanceof VectorLayer && e.target.get('id') === 'airport') {
+          const features = e.target.getSource().getFeatures();
+          console.log('features of the selected circle',features)
+          features.forEach((feature: { on: (arg0: string, arg1: (evt: any) => void) => void; getProperties: () => any; }) => {
+            feature.on('click', (evt:any) => {
+              const data = feature.getProperties();
+              showAirportTooltip(data);
+            });
+          });
+        }
+      });
+
+  
+      if (map.current) {
+        map.current.addLayer(vectorLayer);
+        map.current.getView().fit(circle.getExtent(), { padding: [20, 20, 20, 20], duration: 1000 });
+      }
+    });
+
+    map.current?.getView().setZoom(5.5);
+  };
+  
 
   const drawDelay = ( seletedToggle:string ) => {
      //console.log('drawDelay Function',seletedToggle);
@@ -455,6 +611,7 @@ function MapComponent() {
           avgDict[key] = avg;  
         }
       });
+      setAverageDelayArrival(avgDict);
       Object.keys(regionDelayData).forEach((key) => {
         const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max]);
         //console.log('avg for ',key,'is ',avg);
@@ -513,8 +670,9 @@ function MapComponent() {
          avgDict[key] = avg; 
        }
      });
-     console.log('avgDict',avgDict)
-     console.log('min',min,'max',max)
+     //console.log('avgDict',avgDict)
+     //console.log('min',min,'max',max)
+     setAverageDelayDeparture(avgDict);
      Object.keys(regionDelayData).forEach((key) => {
       const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([min, max]);
       //console.log('avg for ',key,'is ',avg);
@@ -614,25 +772,52 @@ function MapComponent() {
       map.current.addInteraction(select);
 
       select.on('select', (event: { selected: string | any[]; }) => {
-        if (event.selected.length > 0) {
-          setSelectedState(event.selected[0].get('name'));
-          // Zoom to the selected feature
-          if(map.current){
-            map.current.getView().fit(event.selected[0].getGeometry().getExtent(), { padding: [20, 20, 20, 20],
-            maxZoom:7,
-            duration: 1000,
-            });
-            let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
-            console.log(url)
-            axios.get(url).then((res) => {
-              console.log(res.data);
-              drawCircle(res.data,map.current?.getView().getZoom() as number,map.current?map.current:undefined);
-            });    
-    
-          }
+        //if not the same state , then update the selected state
+        console.log('state select event',event)
+        //check if the z-index of the selected layer is 1
+
+        if(SelectedState!==event.selected[0].get('name')){
+          if (event.selected.length > 0) {
+            setSelectedState(event.selected[0].get('name'));
+            // Zoom to the selected feature
+            if(map.current){
+              map.current.getView().fit(event.selected[0].getGeometry().getExtent(), { padding: [20, 20, 20, 20],
+              maxZoom:5.5,
+              duration: 1000,
+              });
+            }
+          }  
         }
       });
 
+      //function to check for the circles with id airports
+      map.current.on('click', (event: MapBrowserEvent<MouseEvent>) => {
+        
+        if(map.current){
+        // Check if the clicked layer is a vector layer with ID "airport"
+        const clickedLayer = event.target;
+        if (clickedLayer instanceof VectorLayer && clickedLayer.get('id') === 'airport') {
+          
+          // Iterate over all layers and find the ones with a z-index of 2
+          map.current.getLayers().forEach((layer) => {
+            if (layer.getZIndex() === 2) {
+              console.log('map click event', event.target);
+              if(map.current){
+                const feature = map.current.forEachFeatureAtPixel(event.pixel, (feature) => {
+                  return feature;
+                });
+                if (feature) {
+                  console.log('Selected feature:', feature.get('name'));
+                }    
+              }
+              // Get the clicked feature      
+              // Log the feature's name if it exists
+            }
+          });
+        }
+        }
+      });
+      
       // set false after map is loaded
       map.current.on("rendercomplete", () => {
         setIsLoading(false);
@@ -660,35 +845,37 @@ function MapComponent() {
 //   }, [regionMin, regionMax]);
 
 
+
   useEffect(() => {
+    console.log('regionDelayData', regionDelayData);
     dispatch(flight_actions.set_flight_region_delay_data(regionDelayData));
   }, [regionDelayData]);
 
-  useEffect(() => {
-    if (airportLocation && map.current) {
-      // Create the marker element
-      const markerElement = document.createElement("div");
-      markerElement.className = "marker";
-      airportCode && (markerElement.title = airportCode.toUpperCase());
+  // useEffect(() => {
+  //   if (airportLocation && map.current) {
+  //     // Create the marker element
+  //     const markerElement = document.createElement("div");
+  //     markerElement.className = "marker";
+  //     airportCode && (markerElement.title = airportCode.toUpperCase());
 
-      const airportCodeElement = document.createElement("div");
-      airportCodeElement.className = "airport-code";
+  //     const airportCodeElement = document.createElement("div");
+  //     airportCodeElement.className = "airport-code";
 
-      airportCode &&
-        (airportCodeElement.textContent = airportCode.toUpperCase());
-      markerElement.appendChild(airportCodeElement);
+  //     airportCode &&
+  //       (airportCodeElement.textContent = airportCode.toUpperCase());
+  //     markerElement.appendChild(airportCodeElement);
 
-      // Create the marker overlay
-      const markerOverlay = new Overlay({
-        element: markerElement,
-        position: airportLocation,
-        positioning: "bottom-center",
-      });
+  //     // Create the marker overlay
+  //     const markerOverlay = new Overlay({
+  //       element: markerElement,
+  //       position: airportLocation,
+  //       positioning: "bottom-center",
+  //     });
 
-      // Add the marker overlay to the map
-      map.current.addOverlay(markerOverlay);
-    }
-  }, [airportLocation, airportCode]);
+  //     // Add the marker overlay to the map
+  //     map.current.addOverlay(markerOverlay);
+  //   }
+  // }, [airportLocation, airportCode]);
 
 
   //fetch the airport info from the api on start
@@ -728,15 +915,19 @@ function MapComponent() {
     drawDelay(selectedToggle);
   }, [selectedFiltersStore]);
 
-
   useEffect(() => {
     console.log("selectedState", SelectedState);
+    dispatch(flight_actions.set_flight_selected_state(SelectedState));
     //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
     let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
     console.log(url)
     axios.get(url).then((res) => {
-      console.log(res.data);
-      //drawCircle(res.data)
+      console.log('state_data',res.data);
+      if(res.data.length>0){
+        setShowGraphs(true);
+        drawCircles(res.data);
+        showTooltip(res.data);
+      }
     });
   }, [SelectedState]);
   
@@ -775,13 +966,17 @@ function MapComponent() {
             <>
               <div id="graph__container">
                 {/* <StackedBarChart/> */}
-                <BarChartBorderRadius/>
+                {/* <BarChartBorderRadius/> */}
+                <BarChart/>
               </div>
               <div id="graph__container_2">
                 <PieChart data={pie_data}/>
-              </div>
+               </div>
             </>
           )}  
+        </div>
+        <div id="tooltip__container" className="d-none">
+
         </div>
       </div>
     </>
