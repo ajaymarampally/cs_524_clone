@@ -80,7 +80,7 @@ function MapComponent() {
   const [colorScaleProps, setColorScaleProps] = useState<any>(null);
 
   useGeographic();
-  
+
   //redux init
   const dispatch = useDispatch();
   const mapStore = useSelector((state: RootState) => state);
@@ -140,7 +140,7 @@ function MapComponent() {
     }
   ]
 
-  
+
 
   //useEffect
   useEffect(() => {
@@ -158,7 +158,7 @@ function MapComponent() {
     const newTree = Object.assign({}, regionDelayTree);
     let minArrDelay = 999999999999;
     let maxArrDelay = -999999999999;
-    let minDepDelay = 999999999999; 
+    let minDepDelay = 999999999999;
     let maxDepDelay = -999999999999;
 
 //     const newGlobalFilter: { [key: string]: object } = {
@@ -168,7 +168,7 @@ function MapComponent() {
 //       "carrier": {},
 // //      "direction": {"departures": true, "arrival": false},
 //     }
-    
+
     newJsonData.forEach((item:any) => {
         const { iso_region, year_month, unique_carrier, size ,delay_type,delay} = item;
         if (!newTree[iso_region]) {
@@ -193,7 +193,7 @@ function MapComponent() {
             minDepDelay = Math.min(minDepDelay, delay);
             maxDepDelay = Math.max(maxDepDelay, delay);
         }
-        
+
         // newGlobalFilter['state'][iso_region] = true;
         // newGlobalFilter['year'][year_month] = true;
         // newGlobalFilter['size'][size] = true;
@@ -219,20 +219,20 @@ function MapComponent() {
               [unique_carrier]: true
             },
           }
-        });        
+        });
     });
     //console.log(newGlobalFilter)
     setRegionDelayData(newTree);
-  
+
   }
-  
+
   function rgbToHex(rgb: string) {
     // Extract the three RGB values from the string
     const [r, g, b] = rgb.match(/\d+/g)?.map(Number) || [];
-  
+
     // Convert the RGB values to hex code
     const hex = ((r << 16) | (g << 8) | b).toString(16);
-  
+
     // Pad the hex code with zeros if necessary
     return "#" + hex.padStart(6, "0");
   }
@@ -344,6 +344,7 @@ function MapComponent() {
 
   //function to make chartData
   const buildChartData1 = (state:string,year:string,carrier:string,size:string,delay:number) =>{
+    console.log('chartData1',chartData1)
     if(!chartData1.hasOwnProperty(size) || !chartData1[size].hasOwnProperty(year)) {
       setChartData1((prevState:any) => {
         return {
@@ -355,7 +356,7 @@ function MapComponent() {
         }
       });
     }
-    
+
     //chartData1[size][year][0] += delay;
     //chartData1[size][year][1] += 1;
 
@@ -388,7 +389,7 @@ function MapComponent() {
     const tooltipContainer = document.getElementById('tooltip__container');
     //set the z-index of the tooltip container to 1 to show it
     tooltipContainer?.style.setProperty('z-index', '1');
-    
+
     //change the className from d-none to d-block to show the tooltip
     tooltipContainer?.classList.remove('d-none');
 
@@ -400,7 +401,7 @@ function MapComponent() {
       // });
       let airlines: string[] = [];
       let airlineDelay: any = {};
-      
+
       const tooltipdata = (regionDelayData[stateMap[SelectedState]])
       console.log('tooltipdata',tooltipdata);
 
@@ -419,7 +420,7 @@ function MapComponent() {
            Object.keys(tooltipdata[year][carrier]).forEach((size) => {
             if(tooltipdata[year][carrier][size][searchTerm]!=null){
               value += parseFloat(tooltipdata[year][carrier][size][searchTerm]);
-              cnt += 1;                
+              cnt += 1;
           }
           else{
             value += 0;
@@ -477,26 +478,26 @@ function MapComponent() {
                     </tr>
                   `;
                 }).join('')}
-              </tbody>              
+              </tbody>
               </table>
           </div>
         </div>
       `;
     }
   };
-  
+
   const showAirportTooltip = (data: any) => {
     // Get reference to the tooltip container element
     const tooltipContainer = document.getElementById('tooltip__container');
     //set the z-index of the tooltip container to 1 to show it
     tooltipContainer?.style.setProperty('z-index', '1');
-    
+
     //change the className from d-none to d-block to show the tooltip
     tooltipContainer?.classList.remove('d-none');
 
     // Update the class of the tooltip container to show it
     if (tooltipContainer) {
-      
+
       // Add content to the tooltip container
       tooltipContainer.innerHTML = `
         <div class="tooltip__header">${airportName} (${airportCode})</div>
@@ -509,7 +510,7 @@ function MapComponent() {
 
   };
 
-  
+
   const drawCircles = (data: any[]) => {
     //clear all previous layers except the basemap
     map.current?.getLayers().forEach((layer) => {
@@ -518,13 +519,13 @@ function MapComponent() {
         map.current?.removeLayer(layer);
       }
     });
-  
+
     data.forEach((d) => {
       console.log('drawing cirlce for',d.airport_name,d.longitude,d.latitude)
       const center = [d.longitude, d.latitude];
       const radius = (d.delay - colorScaleMinMaxStore[0])/(colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
       const color = [255, 0, 0, 0.25];
-  
+
       const circle = new Circle(center, radius*10);
       const style = new Style({
         fill: new Fill({ color: color }),
@@ -532,11 +533,11 @@ function MapComponent() {
       });
       const feature = new Feature(circle);
       feature.setStyle(style);
-  
+
       const vectorSource = new VectorSource({ features: [feature] });
       const vectorLayer = new VectorLayer({ source: vectorSource , zIndex: 2 });
       vectorLayer.set('id', 'airport');
-  
+
       //add a event listener to show the tooltip when the user clicks on the circle
       vectorLayer.on('change', (e:any) => {
         if (e.target instanceof VectorLayer && e.target.get('id') === 'airport') {
@@ -551,7 +552,7 @@ function MapComponent() {
         }
       });
 
-  
+
       if (map.current) {
         map.current.addLayer(vectorLayer);
         map.current.getView().fit(circle.getExtent(), { padding: [20, 20, 20, 20], duration: 1000 });
@@ -560,7 +561,7 @@ function MapComponent() {
 
     map.current?.getView().setZoom(5.5);
   };
-  
+
 
   const drawDelay = ( seletedToggle:string ) => {
      //console.log('drawDelay Function',seletedToggle);
@@ -594,11 +595,11 @@ function MapComponent() {
                       //add 0 to value
                       value += 0;
                     }
-                  }  
+                  }
                 }
-              }  
+              }
             }
-          }  
+          }
         }
         //calculate average of valueArr
         //console.log(value,cnt)
@@ -608,23 +609,25 @@ function MapComponent() {
           min = Math.min(min, avg);
           max = Math.max(max, avg);
           //update avgDict
-          avgDict[key] = avg;  
+          avgDict[key] = avg;
         }
       });
       setAverageDelayArrival(avgDict);
       Object.keys(regionDelayData).forEach((key) => {
         const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max]);
         //console.log('avg for ',key,'is ',avg);
-        drawStateColor(stateMap[key], colorScaleArrival(avgDict[key]));      
+        drawStateColor(stateMap[key], colorScaleArrival(avgDict[key]));
       });
       dispatch(flight_actions.set_flight_legend("arrival"))
       dispatch(flight_actions.set_flight_legend_minmax([min,max]))
       dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max])))
     }
-     if(seletedToggle === "departure"){
+    if(seletedToggle === "departure"){
       let min = Infinity;
-      let max = -Infinity;  
+      let max = -Infinity;
       let avgDict : {[key:string]:number} = {};
+
+      setChartData1({});
 
       Object.keys(regionDelayData).forEach((key) => {
        //console.log(key);
@@ -650,13 +653,13 @@ function MapComponent() {
                   }
                   else{
                     //add 0 to value
-                    value += 0;                    
+                    value += 0;
                   }
-                }  
+                }
               }
-            }  
+            }
           }
-        } 
+        }
        }
        //calculate average of valueArr
        //console.log(value,cnt)
@@ -667,7 +670,7 @@ function MapComponent() {
          min = Math.min(min, avg);
          max = Math.max(max, avg);
          //update avgDict
-         avgDict[key] = avg; 
+         avgDict[key] = avg;
        }
      });
      //console.log('avgDict',avgDict)
@@ -705,11 +708,11 @@ function MapComponent() {
   // useEffect
   useEffect(() => {
     if (mapRef.current) {
-      
+
       const tile = new TileLayer({
         source: new OSM()
       });
-      
+
       tile.on('prerender',(evt)=>{
         if (evt.context) {
           const context = evt.context as CanvasRenderingContext2D;
@@ -746,7 +749,7 @@ function MapComponent() {
       map.current = new Map({
         target: mapRef.current,
         //update the layers to make water black and land grey
-        layers: [tile,statesLayer],        
+        layers: [tile,statesLayer],
         view: new View({
           center: [-98.583333, 39.833333],
           zoom: 4,
@@ -757,7 +760,7 @@ function MapComponent() {
       // Add an event listener to the Select interaction to listen for feature selection
       const select = new SelectInteraction({
         //on feature select, set the selected state
-        
+
         style: new Style({
           fill: new Fill({
             color: 'rgba(255, 255, 255, 0.2)',
@@ -786,18 +789,18 @@ function MapComponent() {
               duration: 1000,
               });
             }
-          }  
+          }
         }
       });
 
       //function to check for the circles with id airports
       map.current.on('click', (event: MapBrowserEvent<MouseEvent>) => {
-        
+
         if(map.current){
         // Check if the clicked layer is a vector layer with ID "airport"
         const clickedLayer = event.target;
         if (clickedLayer instanceof VectorLayer && clickedLayer.get('id') === 'airport') {
-          
+
           // Iterate over all layers and find the ones with a z-index of 2
           map.current.getLayers().forEach((layer) => {
             if (layer.getZIndex() === 2) {
@@ -808,16 +811,16 @@ function MapComponent() {
                 });
                 if (feature) {
                   console.log('Selected feature:', feature.get('name'));
-                }    
+                }
               }
-              // Get the clicked feature      
+              // Get the clicked feature
               // Log the feature's name if it exists
             }
           });
         }
         }
       });
-      
+
       // set false after map is loaded
       map.current.on("rendercomplete", () => {
         setIsLoading(false);
@@ -829,7 +832,7 @@ function MapComponent() {
       }
     };
   }, []);
-  
+
   //const jsonData = require('./data.json');
 
   useEffect(() => {
@@ -837,7 +840,7 @@ function MapComponent() {
         //console.log(response.data);
         parseData(response.data, regionDelayData);
         //setRegionFlag(true);
-      });  
+      });
   }, []);
 
 //  useEffect(() => {
@@ -887,10 +890,10 @@ function MapComponent() {
         axios.get(api_link).then((res) => {
           setAirportInfo(res.data);
         });
-      } 
+      }
       catch(err){
         console.log(err);
-      }  
+      }
     }
   }, []);
 
@@ -930,7 +933,7 @@ function MapComponent() {
       }
     });
   }, [SelectedState]);
-  
+
   return (
     <>
       <div style={{ position: "relative" }}>
@@ -973,7 +976,7 @@ function MapComponent() {
                 <PieChart data={pie_data}/>
                </div>
             </>
-          )}  
+          )}
         </div>
         <div id="tooltip__container" className="d-none">
 

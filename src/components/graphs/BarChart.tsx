@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 /*
 
-bar chart data --> 
+bar chart data -->
 
 */
 
@@ -137,11 +137,11 @@ function MyResponsiveBar() {
   const sortData = (data: any) => {
     let labelSet = new Set();
     Object.keys(data).forEach((size: string) => {
-      Object.keys(data[size]).forEach((year: string) => { 
+      Object.keys(data[size]).forEach((year: string) => {
         labelSet.add(year);
       });
     });
-    let labelList = Array.from(labelSet).sort();  
+    let labelList = Array.from(labelSet).sort();
     return labelList;
 }
 
@@ -150,7 +150,7 @@ const generateYear = (data: any) => {
     Object.keys(data).forEach((year: string) => {
         yearSet.add(year);
     });
-    let yearList = Array.from(yearSet).sort();  
+    let yearList = Array.from(yearSet).sort();
     return yearList;
 }
 
@@ -173,9 +173,9 @@ const generateYearAvg = (data: any) => {
 
 const generateData = (data: any) => {
     /*
-       takes regionDelayData 
+       takes regionDelayData
         for each year in yearArr
-        create a dictionary 
+        create a dictionary
         {
             year:year,
             for each carrier in regionDelayData[year]
@@ -193,34 +193,15 @@ const generateData = (data: any) => {
     console.log('selectedState', selectedState);
     console.log('regionDelayData', regionDelayData[stateMap[selectedState]]);
     let regionData = regionDelayData[stateMap[selectedState]];
+    if(regionData){
+      let labels = sortData(regionData);
+      let years = generateYear(regionData);
+      let yearAvg = generateYearAvg(regionData);
 
-    let labels = sortData(regionData);
-    let years = generateYear(regionData);
-    let yearAvg = generateYearAvg(regionData);
-
-    console.log('yearAvg', yearAvg);
-    setKeys(labels)
-    setYearArr(years);
-    // Object.keys(regionData).forEach((year) => {
-    //     //if year is not in year array, add it
-    //     if (!yearArr.includes(year)) {
-    //         setYearArr((yearArray) => [...yearArray, year]);
-    //     }
-    //     else{
-    //         //remove year from year array
-    //         setYearArr((yearArray) => yearArray.filter((item) => item !== year));
-    //     }
-    //     Object.keys(regionData[year]).forEach((carrier) => {
-    //         //if carrier is not in keys array, add it
-    //         if (!keys.includes(carrier)) {
-    //             setKeys((keysArray) => [...keysArray, carrier]);
-    //         }
-    //         else{
-    //             //remove carrier from keys array
-    //             setKeys((keysArray) => keysArray.filter((item) => item !== carrier));
-    //         }            
-    //     });        
-    // });
+      console.log('yearAvg', yearAvg);
+      setKeys(labels)
+      setYearArr(years);
+    }
  }, [chartDataStore, regionDelayData, selectedState]);
 
 
