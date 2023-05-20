@@ -149,7 +149,7 @@ function MainFilter() {
             </button>
             {
                 filtersState && (
-                    <ul className={`dropdown-menu ${isStateOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    <ul className={`dropdown-menu ${isStateOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" , zIndex: isStateOpen ? "9999" : "auto" }}>
                     {Object.keys(filtersState['state']).map((key, index) => (
                         <li key={key}>
                             <Checkbox id="state" value={key} onChange={onChange}
@@ -157,7 +157,7 @@ function MainFilter() {
                             >{stateMap[key]}</Checkbox>
                         </li>
                     ))}
-                </ul>                
+                </ul>
                 )
             }
         </div>
@@ -172,13 +172,13 @@ function MainFilter() {
             </button>
             {
                 filtersState && (
-                    <ul className={`dropdown-menu ${isYearOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    <ul className={`dropdown-menu ${isYearOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" , zIndex: isStateOpen ? "9999" : "auto" }}>
                     {Object.keys(filtersState['year']).map((key, index) => (
                         <li key={key}>
                             <Checkbox checked={filtersState['year'][key]} id="year" value={key} onChange={onChange}>{key}</Checkbox>
                         </li>
                     ))}
-                </ul>    
+                </ul>
                 )
             }
         </div>
@@ -193,13 +193,13 @@ function MainFilter() {
             </button>
             {
                 filtersState && (
-                    <ul className={`dropdown-menu ${isSizeOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    <ul className={`dropdown-menu ${isSizeOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" , zIndex: isStateOpen ? "9999" : "auto"  }}>
                     {Object.keys(filtersState['size']).map((key, index) => (
                         <li key={key}>
                             <Checkbox checked={filtersState['size'][key]} id="size" value={key} onChange={onChange}>{key}</Checkbox>
                         </li>
                     ))}
-                    </ul>    
+                    </ul>
                 )
             }
         </div>
@@ -214,13 +214,13 @@ function MainFilter() {
             </button>
             {
                 filtersState && (
-                    <ul className={`dropdown-menu ${isCarrierOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
+                    <ul className={`dropdown-menu ${isCarrierOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" , zIndex: isStateOpen ? "9999" : "auto" }}>
                     {Object.keys(filtersState['carrier']).map((key, index) => (
                         <li key={key}>
                             <Checkbox checked={filtersState['carrier'][key]} id="carrier" value={key} onChange={onChange}>{key}</Checkbox>
                         </li>
                     ))}
-                    </ul>    
+                    </ul>
                 )
             }
         </div>
