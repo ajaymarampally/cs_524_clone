@@ -74,6 +74,8 @@ function MapComponent() {
   const [SelectedState, setSelectedState] = useState<any>(null);
   const [averageDelayArrival, setAverageDelayArrival] = useState<{[key:string]:number}>({});
   const [averageDelayDeparture, setAverageDelayDeparture] = useState<{[key:string]:number}>({});
+  const [isStateSelected, setIsStateSelected] = useState(false);
+
 
   //colorscaleProps of type d3.scaleSequential(d3.interpolateRgb("rgba(139, 0, 0, 0.5)", "rgba(255, 192, 203, 0.5)")).domain([min, max])
 
@@ -140,6 +142,14 @@ function MapComponent() {
     }
   ]
 
+  //check if state's states are being tracked correctly
+  useEffect(() => {
+    console.log("is state selected status", isStateSelected);
+  }, [isStateSelected]);
+
+  useEffect(() => {
+    console.log("SelectedState status", SelectedState);
+  }, [SelectedState]);
 
 
   //useEffect
@@ -779,7 +789,8 @@ function MapComponent() {
           if (SelectedState !== event.selected[0].get('name')) {
             if (event.selected.length > 0) {
               setSelectedState(event.selected[0].get('name'));
-      
+              setIsStateSelected(true);
+              
               if (map.current) {
                 map.current.getView().fit(event.selected[0].getGeometry().getExtent(), {
                   padding: [20, 20, 20, 20],
@@ -787,11 +798,13 @@ function MapComponent() {
                   duration: 1000,
                 });
               }
+              console.log('State selected test true yp',isStateSelected,SelectedState);
             }
           }
         } catch (error) {
           // Handle the error here
-          console.error('An error occurred:', error);
+          setSelectedState(null);
+          setIsStateSelected(false);
         }
       });
 
