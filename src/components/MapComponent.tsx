@@ -614,13 +614,13 @@ function MapComponent() {
       });
       setAverageDelayArrival(avgDict);
       Object.keys(regionDelayData).forEach((key) => {
-        const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max]);
+        const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([min, max]);
         //console.log('avg for ',key,'is ',avg);
         drawStateColor(stateMap[key], colorScaleArrival(avgDict[key]));
       });
       dispatch(flight_actions.set_flight_legend("arrival"))
       dispatch(flight_actions.set_flight_legend_minmax([min,max]))
-      dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max])))
+      dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([min, max])))
     }
     if(seletedToggle === "departure"){
       let min = Infinity;
@@ -677,7 +677,7 @@ function MapComponent() {
      //console.log('min',min,'max',max)
      setAverageDelayDeparture(avgDict);
      Object.keys(regionDelayData).forEach((key) => {
-      const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([min, max]);
+      const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max]);
       //console.log('avg for ',key,'is ',avg);
       if(avgDict[key]!==null){
         console.log('key',key,avgDict[key])
@@ -688,7 +688,7 @@ function MapComponent() {
     dispatch(flight_actions.set_flight_legend("departure"))
     dispatch(flight_actions.set_flight_legend_minmax([min,max]))
     //console.log('setting color scale for departure')
-    dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)" )).domain([min, max])))
+    dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)" )).domain([min, max])))
     }
   };
 
