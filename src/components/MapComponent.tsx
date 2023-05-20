@@ -759,8 +759,6 @@ function MapComponent() {
 
       // Add an event listener to the Select interaction to listen for feature selection
       const select = new SelectInteraction({
-        //on feature select, set the selected state
-
         style: new Style({
           fill: new Fill({
             color: 'rgba(255, 255, 255, 0.2)',
@@ -771,53 +769,29 @@ function MapComponent() {
           }),
         }),
       });
-
+      
       map.current.addInteraction(select);
-
+      
       select.on('select', (event: { selected: string | any[]; }) => {
-        //if not the same state , then update the selected state
-        console.log('state select event',event)
-        //check if the z-index of the selected layer is 1
-
-        if(SelectedState!==event.selected[0].get('name')){
-          if (event.selected.length > 0) {
-            setSelectedState(event.selected[0].get('name'));
-            // Zoom to the selected feature
-            if(map.current){
-              map.current.getView().fit(event.selected[0].getGeometry().getExtent(), { padding: [20, 20, 20, 20],
-              maxZoom:5.5,
-              duration: 1000,
-              });
+        try {
+          console.log('state select event', event);
+      
+          if (SelectedState !== event.selected[0].get('name')) {
+            if (event.selected.length > 0) {
+              setSelectedState(event.selected[0].get('name'));
+      
+              if (map.current) {
+                map.current.getView().fit(event.selected[0].getGeometry().getExtent(), {
+                  padding: [20, 20, 20, 20],
+                  maxZoom: 5.5,
+                  duration: 1000,
+                });
+              }
             }
           }
-        }
-      });
-
-      //function to check for the circles with id airports
-      map.current.on('click', (event: MapBrowserEvent<MouseEvent>) => {
-
-        if(map.current){
-        // Check if the clicked layer is a vector layer with ID "airport"
-        const clickedLayer = event.target;
-        if (clickedLayer instanceof VectorLayer && clickedLayer.get('id') === 'airport') {
-
-          // Iterate over all layers and find the ones with a z-index of 2
-          map.current.getLayers().forEach((layer) => {
-            if (layer.getZIndex() === 2) {
-              console.log('map click event', event.target);
-              if(map.current){
-                const feature = map.current.forEachFeatureAtPixel(event.pixel, (feature) => {
-                  return feature;
-                });
-                if (feature) {
-                  console.log('Selected feature:', feature.get('name'));
-                }
-              }
-              // Get the clicked feature
-              // Log the feature's name if it exists
-            }
-          });
-        }
+        } catch (error) {
+          // Handle the error here
+          console.error('An error occurred:', error);
         }
       });
 
