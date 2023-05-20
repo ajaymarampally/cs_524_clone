@@ -12,8 +12,8 @@ interface FilterProps {
 
 function FilterPropsComponent(props: FilterProps) {
   //constants
-  const [alignment, setAlignment] = React.useState("arrival");
-  const [ActiveToggle, setActiveToggle] = useState("arrival");
+  const [alignment, setAlignment] = React.useState("departure");
+  const [ActiveToggle, setActiveToggle] = useState("departure");
   const ToggleButton = styled(MuiToggleButton)(() => ({
     "&.Mui-selected": {
       color: "white",

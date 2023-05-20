@@ -19,9 +19,9 @@ interface FlightState {
 }
 
 const initialState: FlightState = {
-    searchTerm: '', 
-    selectedToggle: 'arrival',
-    selectedLegend: 'arrival',
+    searchTerm: '',
+    selectedToggle: 'departure',
+    selectedLegend: 'departure',
     LegendMinMax: [0, 0],
     selectedState: '',
     colorScale: null,
@@ -78,8 +78,8 @@ const flightSlice = createSlice({
     },
     reset_flight_slice(state) {
       state.searchTerm = '';
-      state.selectedToggle = 'arrival';
-      state.selectedLegend = 'arrival';
+      state.selectedToggle = 'departure';
+      state.selectedLegend = 'departure';
       state.LegendMinMax = [0, 0];
       state.colorScale = null;
       state.selectedState = '';
@@ -101,4 +101,3 @@ const flightSlice = createSlice({
 export const flight_actions = flightSlice.actions;
 
 export default flightSlice;
- 
