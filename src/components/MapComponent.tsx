@@ -45,7 +45,7 @@ import { features } from "process";
 import BarChart from "./graphs/BarChart";
 import { GroupedBarChart } from "./graphs/GroupedBarChart";
 import { VerticalBarChart } from "./graphs/VerticalBarChart";
-
+import { none } from "ol/centerconstraint";
 
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
@@ -342,6 +342,47 @@ function MapComponent() {
     setAirportCode(airport.iata_code);
     return [airport.longitude, airport.latitude]
   };
+
+  //function to make chartData
+  const buildChartData1 = (state:string,year:string,carrier:string,size:string,delay:number) =>{
+    if(!chartData1.hasOwnProperty(size) || !chartData1[size].hasOwnProperty(year)) {
+      setChartData1((prevState:any) => {
+        return {
+          ...prevState,
+          [size]: {
+            ...prevState[size],
+            [year]: [0, 0]
+          }
+        }
+      });
+    }
+
+    //chartData1[size][year][0] += delay;
+    //chartData1[size][year][1] += 1;
+
+    setChartData1((prevState:any) => {
+      const prevSize = prevState.hasOwnProperty(size) ? prevState[size] : {};
+      return {
+        ...prevState,
+        [size]: {
+          ...prevSize,
+          [year]: [prevSize.hasOwnProperty(year) ? prevSize[year][0] + delay : delay, prevSize.hasOwnProperty(year) ? prevSize[year][1] + 1 : 1]
+        }
+      }
+    });
+  }
+
+  const consolidateChartData = (chartData:any) =>{
+    let newChartData:any = {};
+    Object.keys(chartData).forEach((size) => {
+      newChartData[size] = {};
+      Object.keys(chartData[size]).forEach((year) => {
+        newChartData[size][year] = chartData[size][year][0]/chartData[size][year][1];
+      });
+    });
+    return newChartData;
+
+  }
 
   const showTooltip = (data: any) => {
     // Get reference to the tooltip container element
@@ -805,6 +846,7 @@ function MapComponent() {
         try {
           console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
           setLastClick(event.mapBrowserEvent.pixel);
+
           if (SelectedState !== event.selected[0].get('name')) {
             if (event.selected.length > 0) {
               setSelectedState(event.selected[0].get('name'));
@@ -951,6 +993,7 @@ function MapComponent() {
     }
   }
   
+
   return (
     <>
       <div style={{ position: "relative" }}>
