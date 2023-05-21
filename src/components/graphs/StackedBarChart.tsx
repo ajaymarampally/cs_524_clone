@@ -13,6 +13,7 @@ const StackedBarChart = () => {
   const chartDataStore = useSelector((state: any) => state.flight.chartData1);
 
   useEffect(() => {
+    console.log('Yash : ',chartDataStore);
     setChartData(chartDataStore);
     let labels = sortData(chartDataStore);
     setChartLabels(labels);

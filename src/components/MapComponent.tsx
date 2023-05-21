@@ -76,6 +76,15 @@ function MapComponent() {
   const [isStateSelected, setIsStateSelected] = useState(false);
   const [initLoad,setInitLoad] = useState(false);
   const [Graph1Dic, setGraph1Dic] = useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({});
+  const [LevelZeroGraphData,setLevelZeroGraphData]=useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({
+    "graph1":{},//month VS delay
+    "graph2":{} //carrier VS delay
+  });
+
+  const [LevelOneGraphData,setLevelOneGraphData]=useState<{[key:string]:{[key:string]:{[key:string]:{[key:string]:number}}}}>({
+    "graph1":{},//month VS delay
+    "graph2":{} //carrier VS delay
+  })
 
 
 
@@ -524,6 +533,12 @@ function MapComponent() {
     let avgDictDep : {[key:string]:number} = {};
 
     let TempGraph1Dic : any = {};
+    let tempGraph1 : any = {};
+    let tempGraph2 : any = {};
+
+    let level1Graph1:any = {};
+    let level1Graph2:any = {};
+    
 
     Object.keys(regionDelayData).forEach((key) => {
 
@@ -550,9 +565,48 @@ function MapComponent() {
                     {
                       TempGraph1Dic[year][carrier] = { "arrVal":0,"depVal":0,"cnt":0}
                     }
+
+                    if(!tempGraph1[year]){
+                      tempGraph1[year]={"arrVal":0,"depVal":0,"cnt":0}
+                    }
+                    if(!tempGraph2[carrier]){
+                      tempGraph2[carrier]={"arrVal":0,"depVal":0,"cnt":0}
+                    }
+
+                    if(!level1Graph1[key]){
+                        level1Graph1[key]={}
+                    }
+                    if(!level1Graph1[key][year]){
+                      level1Graph1[key][year]={"arrVal":0,"depVal":0,"cnt":0}
+                    }
+
+                    if(!level1Graph2[key]){
+                      level1Graph2[key]={}
+                    }
+                    if(!level1Graph2[key][carrier]){
+                      level1Graph2[key][carrier]={"arrVal":0,"depVal":0,"cnt":0}
+                    }
+
+                    tempGraph1[year]["arrVal"] += valueArr
+                    tempGraph1[year]["depVal"] += valueDep
+                    tempGraph1[year]["cnt"] += 1
+
+                    tempGraph2[carrier]["arrVal"] += valueArr
+                    tempGraph2[carrier]["depVal"] += valueDep
+                    tempGraph2[carrier]["cnt"] += 1
+
                     TempGraph1Dic[year][carrier]["arrVal"] += valueArr
                     TempGraph1Dic[year][carrier]["depVal"] += valueDep
-                    TempGraph1Dic[year][carrier]["cnt"] += 1                    
+                    TempGraph1Dic[year][carrier]["cnt"] += 1
+
+                    level1Graph1[key][year]["arrVal"] += valueArr
+                    level1Graph1[key][year]["depVal"] += valueDep
+                    level1Graph1[key][year]["cnt"] += 1
+                    
+                    level1Graph2[key][carrier]["arrVal"] += valueArr
+                    level1Graph2[key][carrier]["depVal"] += valueDep
+                    level1Graph2[key][carrier]["cnt"] += 1
+                    
                   }
                   else{
                     //add 0 to value
@@ -614,6 +668,19 @@ function MapComponent() {
       }
 
     });
+
+
+    setLevelZeroGraphData(
+      {
+        "graph1":tempGraph1, //month VS delay
+        "graph2":tempGraph2   //carrier VS delay}
+      });
+
+    setLevelOneGraphData({
+      "graph1":level1Graph1, //month VS delay
+      "graph2":level1Graph2   //carrier VS delay}
+    });
+
     setGraph1Dic(FinalGraph1Dic);
   }     
   
