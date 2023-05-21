@@ -43,6 +43,7 @@ import MapBrowserEvent from 'ol/MapBrowserEvent';
 import Layer from "ol/renderer/Layer";
 import { features } from "process";
 import BarChart from "./graphs/BarChart";
+import { none } from "ol/centerconstraint";
 
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
@@ -228,8 +229,7 @@ function MapComponent() {
         map.current?.removeLayer(layer);
       }
     });
-
-
+    console.log('state','value',value,state)
     const url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
     // fetch the states geojson
     fetch(url)
@@ -325,7 +325,6 @@ function MapComponent() {
 
   //function to make chartData
   const buildChartData1 = (state:string,year:string,carrier:string,size:string,delay:number) =>{
-    console.log('chartData1',chartData1)
     if(!chartData1.hasOwnProperty(size) || !chartData1[size].hasOwnProperty(year)) {
       setChartData1((prevState:any) => {
         return {
@@ -515,7 +514,7 @@ function MapComponent() {
       const center = [d.longitude, d.latitude];
       const radius = (d.delay - colorScaleMinMaxStore[0]) / (colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
       const color = [255, 0, 0, 0.25];
-  
+
       const circle = new Circle(center, radius * 10);
       const style = new Style({
         fill: new Fill({ color: color }),
@@ -523,13 +522,13 @@ function MapComponent() {
       });
       const feature = new Feature(circle);
       feature.setStyle(style);
-  
+
       const vectorSource = new VectorSource({ features: [feature] });
       const vectorLayer = new VectorLayer({ source: vectorSource, zIndex: 2 });
-  
+
       // Set the ID for the vector layer
       vectorLayer.set('id', 'airport_' + d.airport_name);
-  
+
       // Add an event listener to show the tooltip when the user clicks on the circle
       vectorLayer.on('change', (e: any) => {
         const layerId = e.target?.get('id');
@@ -544,13 +543,13 @@ function MapComponent() {
           });
         }
       });
-  
+
       if (map.current) {
         map.current.addLayer(vectorLayer);
         map.current.getView().fit(circle.getExtent(), { padding: [20, 20, 20, 20], duration: 1000 });
       }
     });
-  
+
     map.current?.getView().setZoom(5.5);
 
   };
@@ -578,9 +577,9 @@ function MapComponent() {
               if(selectedFiltersStore['carrier'][carrier]){
                 for(let size in regionDelayData[key][year][carrier]){
                   if(regionDelayData[key][year][carrier][size]['arr_delay'] != null){
-                    //parse the value to float and add it to value
-                    valueArr += parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']);
-                    valueDep += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
+                    //parse the value to float and add it to value with modulus to make it positive
+                    valueArr += Math.abs(parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']));
+                    valueDep += Math.abs(parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']));
                     //increment cnt
                     cnt += 1;
                     //build chartData1
@@ -630,11 +629,11 @@ function MapComponent() {
         'arrival': avgDictArr,
         'departure' : avgDictDep
       }
-    
+
     )
   }
-      
-  
+
+
 
   const drawDelay = ( seletedToggle:string ) => {
       try {
@@ -648,7 +647,7 @@ function MapComponent() {
           dispatch(flight_actions.set_flight_legend_minmax([averageStateLevelDelay['arrival']['min'],averageStateLevelDelay['arrival']['max']]))
           dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']])))
         }
-      
+
         if(seletedToggle === "departure"){
           Object.keys(regionDelayData).forEach((key) => {
             const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([averageStateLevelDelay['departure']['min'], averageStateLevelDelay['departure']['max']]);
@@ -680,7 +679,7 @@ function MapComponent() {
 
   // useEffect
   useEffect(() => {
-    
+
     if (mapRef.current) {
 
       const tile = new TileLayer({
@@ -743,18 +742,18 @@ function MapComponent() {
           }),
         }),
       });
-      
+
       map.current.addInteraction(select);
-      
+
       select.on('select', (event: { selected: string | any[]; }) => {
         try {
           console.log('state select event', event);
-      
+
           if (SelectedState !== event.selected[0].get('name')) {
             if (event.selected.length > 0) {
               setSelectedState(event.selected[0].get('name'));
               setIsStateSelected(true);
-              
+
               if (map.current) {
                 map.current.getView().fit(event.selected[0].getGeometry().getExtent(), {
                   padding: [20, 20, 20, 20],
@@ -840,9 +839,9 @@ function MapComponent() {
 
     //state disselected
     if (SelectedState === null)
-    {  
+    {
       return
-    } 
+    }
 
     dispatch(flight_actions.set_flight_selected_state(SelectedState));
     //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
@@ -856,7 +855,7 @@ function MapComponent() {
     });
 
     map.current?.getLayers().forEach((layer) => {
-        if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_")) 
+        if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_"))
         {
           console.log('Yash : Layers on map ', layer.get('id'));
         }
@@ -866,7 +865,7 @@ function MapComponent() {
   }, [SelectedState]);
 
 
-  
+
   return (
     <>
       <div style={{ position: "relative" }}>
