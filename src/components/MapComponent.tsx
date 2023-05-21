@@ -74,6 +74,7 @@ function MapComponent() {
   const [SelectedState, setSelectedState] = useState<any>(null);
   const [averageStateLevelDelay, setAverageStateLevelDelay] = useState<{[key:string]:{[key:string]:number}}>({});
   const [isStateSelected, setIsStateSelected] = useState(false);
+  const [initLoad,setInitLoad] = useState(false);
 
 
   //colorscaleProps of type d3.scaleSequential(d3.interpolateRgb("rgba(139, 0, 0, 0.5)", "rgba(255, 192, 203, 0.5)")).domain([min, max])
@@ -679,6 +680,7 @@ function MapComponent() {
 
   // useEffect
   useEffect(() => {
+    
     if (mapRef.current) {
 
       const tile = new TileLayer({
@@ -785,7 +787,11 @@ function MapComponent() {
 
   useEffect(() => {
       const depature_data =  axios.get('http://18.216.87.63:3000/api/region_delay').then((response) => {
-        parseData(response.data, regionDelayData);
+        parseData(response.data, regionDelayData).then(
+          ()=>{
+            setInitLoad(true);
+          }
+        );
       });
   }, []);
 
@@ -859,6 +865,8 @@ function MapComponent() {
 
   }, [SelectedState]);
 
+
+  
   return (
     <>
       <div style={{ position: "relative" }}>
