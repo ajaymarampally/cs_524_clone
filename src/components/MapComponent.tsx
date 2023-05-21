@@ -72,8 +72,7 @@ function MapComponent() {
   const [consolidatedChartData, setConsolidatedChartData] = useState<any>(null);
   const [showGraphs, setShowGraphs] = useState<boolean>(false);
   const [SelectedState, setSelectedState] = useState<any>(null);
-  const [averageDelayArrival, setAverageDelayArrival] = useState<{[key:string]:number}>({});
-  const [averageDelayDeparture, setAverageDelayDeparture] = useState<{[key:string]:number}>({});
+  const [averageStateLevelDelay, setAverageStateLevelDelay] = useState<{[key:string]:{[key:string]:number}}>({});
   const [isStateSelected, setIsStateSelected] = useState(false);
 
 
@@ -142,15 +141,6 @@ function MapComponent() {
     }
   ]
 
-  //check if state's states are being tracked correctly
-  useEffect(() => {
-    console.log("is state selected status", isStateSelected);
-  }, [isStateSelected]);
-
-  useEffect(() => {
-    console.log("SelectedState status", SelectedState);
-  }, [SelectedState]);
-
 
   //useEffect
   useEffect(() => {
@@ -159,25 +149,16 @@ function MapComponent() {
   }, [globalFilter]);
 
 
+
   const handleFilterClick = () =>{
     setShowGraphs(!showGraphs);
   }
 
+
+
   //functions
   async function parseData(newJsonData:any, regionDelayTree:any) {
     const newTree = Object.assign({}, regionDelayTree);
-    let minArrDelay = 999999999999;
-    let maxArrDelay = -999999999999;
-    let minDepDelay = 999999999999;
-    let maxDepDelay = -999999999999;
-
-//     const newGlobalFilter: { [key: string]: object } = {
-//       "state": {},
-//       "year": {},
-//       "size": {},
-//       "carrier": {},
-// //      "direction": {"departures": true, "arrival": false},
-//     }
 
     newJsonData.forEach((item:any) => {
         const { iso_region, year_month, unique_carrier, size ,delay_type,delay} = item;
@@ -195,19 +176,10 @@ function MapComponent() {
         }
         if(delay_type==='arr'){
             newTree[iso_region][year_month][unique_carrier][size]['arr_delay'] = delay;
-            minArrDelay = Math.min(minArrDelay, delay);
-            maxArrDelay = Math.max(maxArrDelay, delay);
         }
         if(delay_type==='dep'){
             newTree[iso_region][year_month][unique_carrier][size]['dep_delay'] = delay;
-            minDepDelay = Math.min(minDepDelay, delay);
-            maxDepDelay = Math.max(maxDepDelay, delay);
-        }
-
-        // newGlobalFilter['state'][iso_region] = true;
-        // newGlobalFilter['year'][year_month] = true;
-        // newGlobalFilter['size'][size] = true;
-        // newGlobalFilter['carrier'][unique_carrier] = true;
+         }
 
         setGlobalFilter((prevState:any) => {
           return {
@@ -231,9 +203,7 @@ function MapComponent() {
           }
         });
     });
-    //console.log(newGlobalFilter)
     setRegionDelayData(newTree);
-
   }
 
   function rgbToHex(rgb: string) {
@@ -468,7 +438,7 @@ function MapComponent() {
       tooltipContainer.innerHTML = `
         <div id="tooltip__header">${SelectedState}</div>
         <div id="tooltip__body">
-          <div>Total Arrival Delay: ${Math.round(averageDelayArrival[stateMap[SelectedState]] * 100)/100}</div>
+          <div>Total Arrival Delay: ${Math.round(averageStateLevelDelay['arrival'][stateMap[SelectedState]] * 100)/100}</div>
           <div>Total Months: ${Object.keys(tooltipdata).length}</div>
           <div id="tooltip__header">Carrier Average Delays</div>
           <div id="tooltip__table__body" class="table table-hover table-bordered">
@@ -520,187 +490,179 @@ function MapComponent() {
 
   };
 
-
-  const drawCircles = (data: any[]) => {
-    //clear all previous layers except the basemap
+  const clearCircles = () => {
+    // Clear all previous layers except the basemap
     map.current?.getLayers().forEach((layer) => {
-      if (layer instanceof VectorLayer && layer.get('id') === 'airport') {
-        console.log('removing layer',layer.get('id'))
+      if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_")) {
+        console.log('removing layer', layer.get('id'));
         map.current?.removeLayer(layer);
       }
     });
+    map.current?.render();
+  }
 
+  const drawCircles = (data: any[]) => {
+    // Clear all previous layers except the basemap
+    // map.current?.getLayers().forEach((layer) => {
+    //   if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_")) {
+    //     console.log('removing layer', layer.get('id'));
+    //     map.current?.removeLayer(layer);
+    //   }
+    // });
     data.forEach((d) => {
-      console.log('drawing cirlce for',d.airport_name,d.longitude,d.latitude)
+      console.log('drawing circle for', d.airport_name, d.longitude, d.latitude);
       const center = [d.longitude, d.latitude];
-      const radius = (d.delay - colorScaleMinMaxStore[0])/(colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
+      const radius = (d.delay - colorScaleMinMaxStore[0]) / (colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
       const color = [255, 0, 0, 0.25];
-
-      const circle = new Circle(center, radius*10);
+  
+      const circle = new Circle(center, radius * 10);
       const style = new Style({
         fill: new Fill({ color: color }),
         stroke: new Stroke({ color: color, width: 2 })
       });
       const feature = new Feature(circle);
       feature.setStyle(style);
-
+  
       const vectorSource = new VectorSource({ features: [feature] });
-      const vectorLayer = new VectorLayer({ source: vectorSource , zIndex: 2 });
-      vectorLayer.set('id', 'airport');
-
-      //add a event listener to show the tooltip when the user clicks on the circle
-      vectorLayer.on('change', (e:any) => {
-        if (e.target instanceof VectorLayer && e.target.get('id') === 'airport') {
+      const vectorLayer = new VectorLayer({ source: vectorSource, zIndex: 2 });
+  
+      // Set the ID for the vector layer
+      vectorLayer.set('id', 'airport_' + d.airport_name);
+  
+      // Add an event listener to show the tooltip when the user clicks on the circle
+      vectorLayer.on('change', (e: any) => {
+        const layerId = e.target?.get('id');
+        if (e.target instanceof VectorLayer && layerId?.startsWith('airport_')) {
           const features = e.target.getSource().getFeatures();
-          console.log('features of the selected circle',features)
-          features.forEach((feature: { on: (arg0: string, arg1: (evt: any) => void) => void; getProperties: () => any; }) => {
-            feature.on('click', (evt:any) => {
+          console.log('features of the selected circle', features);
+          features.forEach((feature: any) => {
+            feature.on('click', (evt: any) => {
               const data = feature.getProperties();
               showAirportTooltip(data);
             });
           });
         }
       });
-
-
+  
       if (map.current) {
         map.current.addLayer(vectorLayer);
         map.current.getView().fit(circle.getExtent(), { padding: [20, 20, 20, 20], duration: 1000 });
       }
     });
-
+  
     map.current?.getView().setZoom(5.5);
+
   };
 
+  const calculateStateLevelDelay = ()=>{
+    let minArr = Infinity;
+    let maxArr = -Infinity;
+    let avgDictArr : {[key:string]:number} = {};
 
-  const drawDelay = ( seletedToggle:string ) => {
-     //console.log('drawDelay Function',seletedToggle);
-     if(seletedToggle === "arrival"){
-      let min = Infinity;
-      let max = -Infinity;
-      let avgDict : {[key:string]:number} = {};
+    let minDep = Infinity;
+    let maxDep = -Infinity;
+    let avgDictDep : {[key:string]:number} = {};
 
-      setChartData1({});
+    setChartData1({});
 
-      Object.keys(regionDelayData).forEach((key) => {
+    Object.keys(regionDelayData).forEach((key) => {
 
-        let value:number = 0;
-        let cnt = 0;
-        if(selectedFiltersStore['state'][key]){
-          for (let year in regionDelayData[key]) {
-            if(selectedFiltersStore['year'][year]){
-              for(let carrier in regionDelayData[key][year]){
-                if(selectedFiltersStore['carrier'][carrier]){
-                  for(let size in regionDelayData[key][year][carrier]){
-                    if(regionDelayData[key][year][carrier][size]['arr_delay'] != null){
-                      //parse the value to float and add it to value
-                      value += parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']);
-                      //increment cnt
-                      cnt += 1;
-                      //build chartData1
-                      buildChartData1(key,year,carrier,size,parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']));
-                      //update min and max
-                    }
-                    else{
-                      //add 0 to value
-                      value += 0;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        //calculate average of valueArr
-        //console.log(value,cnt)
-        if(value>0){
-          let avg = value / cnt;
-          //update min and max
-          min = Math.min(min, avg);
-          max = Math.max(max, avg);
-          //update avgDict
-          avgDict[key] = avg;
-        }
-      });
-      setAverageDelayArrival(avgDict);
-      Object.keys(regionDelayData).forEach((key) => {
-        const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([min, max]);
-        //console.log('avg for ',key,'is ',avg);
-        drawStateColor(stateMap[key], colorScaleArrival(avgDict[key]));
-      });
-      dispatch(flight_actions.set_flight_legend("arrival"))
-      dispatch(flight_actions.set_flight_legend_minmax([min,max]))
-      dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([min, max])))
-    }
-    if(seletedToggle === "departure"){
-      let min = Infinity;
-      let max = -Infinity;
-      let avgDict : {[key:string]:number} = {};
-
-      setChartData1({});
-
-      Object.keys(regionDelayData).forEach((key) => {
-       //console.log(key);
-       let value:number = 0;
-       let cnt = 0;
-      console.log('key',key,selectedFiltersStore['state'][key])
-       if(selectedFiltersStore['state'][key])
-       {
+      let valueArr:number = 0;
+      let valueDep:number = 0;
+      let cnt = 0;
+      if(selectedFiltersStore['state'][key]){
         for (let year in regionDelayData[key]) {
           if(selectedFiltersStore['year'][year]){
             for(let carrier in regionDelayData[key][year]){
               if(selectedFiltersStore['carrier'][carrier]){
                 for(let size in regionDelayData[key][year][carrier]){
-                  //if regionDelayData[key][year][carrier][size]['arr_delay'] is not null then add it to value
-                  if(regionDelayData[key][year][carrier][size]['dep_delay'] != null){
+                  if(regionDelayData[key][year][carrier][size]['arr_delay'] != null){
                     //parse the value to float and add it to value
-                    value += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
+                    valueArr += parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']);
+                    valueDep += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
+                    //increment cnt
                     cnt += 1;
-                    //console.log('value',value)
-                     //update min and max
-                      //build chartData1
-                      buildChartData1(key,year,carrier,size,parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']));
+                    //build chartData1
+                    buildChartData1(key,year,carrier,size,parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']));
+                    //update min and max
                   }
                   else{
                     //add 0 to value
-                    value += 0;
+                    valueArr += 0;
+                    valueDep += 0;
                   }
                 }
               }
             }
           }
         }
-       }
-       //calculate average of valueArr
-       //console.log(value,cnt)
-       //create a color scale with opacity 0.5
-       if(value>0){
-        let avg = value / cnt;
-        //update min and max based on avg
-         min = Math.min(min, avg);
-         max = Math.max(max, avg);
-         //update avgDict
-         avgDict[key] = avg;
-       }
-     });
-     //console.log('avgDict',avgDict)
-     //console.log('min',min,'max',max)
-     setAverageDelayDeparture(avgDict);
-     Object.keys(regionDelayData).forEach((key) => {
-      const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([min, max]);
-      //console.log('avg for ',key,'is ',avg);
-      if(avgDict[key]!==null){
-        console.log('key',key,avgDict[key])
-        drawStateColor(stateMap[key], colorScaleDeparture(avgDict[key]));
+      }
+      //calculate average of valueArr
+      //console.log(value,cnt)
+      if(valueArr>0){
+        let avgArr = valueArr / cnt;
+        //update min and max
+        minArr = Math.min(minArr, avgArr);
+        maxArr = Math.max(maxArr, avgArr);
+        //update avgDict
+        avgDictArr[key] = avgArr;
+      }
+
+      if(valueDep>0){
+        let avgDep = valueDep / cnt;
+        //update min and max
+        minDep = Math.min(minDep, avgDep);
+        maxDep = Math.max(maxDep, avgDep);
+        //update avgDict
+        avgDictDep[key] = avgDep;
       }
 
     });
-    dispatch(flight_actions.set_flight_legend("departure"))
-    dispatch(flight_actions.set_flight_legend_minmax([min,max]))
-    //console.log('setting color scale for departure')
-    dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)" )).domain([min, max])))
-    }
-  };
+    avgDictArr['min'] = minArr;
+    avgDictArr['max'] = maxArr;
+
+    avgDictDep['min'] = minDep;
+    avgDictDep['max'] = maxDep;
+
+    setAverageStateLevelDelay(
+      {
+        'arrival': avgDictArr,
+        'departure' : avgDictDep
+      }
+    
+    )
+  }
+      
+  
+
+  const drawDelay = ( seletedToggle:string ) => {
+      try {
+        if(seletedToggle === "arrival"){
+          Object.keys(regionDelayData).forEach((key) => {
+            const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']]);
+            drawStateColor(stateMap[key], colorScaleArrival(averageStateLevelDelay['arrival'][key]));
+          });
+
+          dispatch(flight_actions.set_flight_legend("arrival"))
+          dispatch(flight_actions.set_flight_legend_minmax([averageStateLevelDelay['arrival']['min'],averageStateLevelDelay['arrival']['max']]))
+          dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']])))
+        }
+      
+        if(seletedToggle === "departure"){
+          Object.keys(regionDelayData).forEach((key) => {
+            const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([averageStateLevelDelay['departure']['min'], averageStateLevelDelay['departure']['max']]);
+            drawStateColor(stateMap[key], colorScaleDeparture(averageStateLevelDelay['departure'][key]));
+          });
+          dispatch(flight_actions.set_flight_legend("departure"))
+          dispatch(flight_actions.set_flight_legend_minmax([averageStateLevelDelay['departure']['min'],averageStateLevelDelay['departure']['max']]))
+          dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)" )).domain([averageStateLevelDelay['departure']['min'], averageStateLevelDelay['departure']['max']])))
+        }
+      }catch (error) {
+        // Handle the error here
+        //console.log("Dic not calculated yet")
+      }
+
+    };
 
   // useEffect
   useEffect(() => {
@@ -798,7 +760,6 @@ function MapComponent() {
                   duration: 1000,
                 });
               }
-              console.log('State selected test true yp',isStateSelected,SelectedState);
             }
           }
         } catch (error) {
@@ -824,48 +785,16 @@ function MapComponent() {
 
   useEffect(() => {
       const depature_data =  axios.get('http://18.216.87.63:3000/api/region_delay').then((response) => {
-        //console.log(response.data);
         parseData(response.data, regionDelayData);
-        //setRegionFlag(true);
       });
   }, []);
 
-//  useEffect(() => {
-//   console.log('regionMin', regionMin, 'regionMax', regionMax);
-//   }, [regionMin, regionMax]);
-
-
 
   useEffect(() => {
-    console.log('regionDelayData', regionDelayData);
+    calculateStateLevelDelay();
     dispatch(flight_actions.set_flight_region_delay_data(regionDelayData));
   }, [regionDelayData]);
 
-  // useEffect(() => {
-  //   if (airportLocation && map.current) {
-  //     // Create the marker element
-  //     const markerElement = document.createElement("div");
-  //     markerElement.className = "marker";
-  //     airportCode && (markerElement.title = airportCode.toUpperCase());
-
-  //     const airportCodeElement = document.createElement("div");
-  //     airportCodeElement.className = "airport-code";
-
-  //     airportCode &&
-  //       (airportCodeElement.textContent = airportCode.toUpperCase());
-  //     markerElement.appendChild(airportCodeElement);
-
-  //     // Create the marker overlay
-  //     const markerOverlay = new Overlay({
-  //       element: markerElement,
-  //       position: airportLocation,
-  //       positioning: "bottom-center",
-  //     });
-
-  //     // Add the marker overlay to the map
-  //     map.current.addOverlay(markerOverlay);
-  //   }
-  // }, [airportLocation, airportCode]);
 
 
   //fetch the airport info from the api on start
@@ -884,41 +813,50 @@ function MapComponent() {
     }
   }, []);
 
-  //selectedToggle useEffect
+  //trigger drawDelay
   useEffect(() => {
-    //console.log("selectedToggle", selectedToggle);
     drawDelay(selectedToggle);
   }, [selectedToggle]);
 
-  // useEffect(() => {
-  //   console.log("colorScaleProps", colorScaleProps);
-  // }, [colorScaleProps]);
-
-
-  // useEffect(() => {
-  //   console.log("selectedFilters", selectedFilters);
-  // }, [selectedFilters]);
+  useEffect(() => {
+    drawDelay(selectedToggle);
+  }, [averageStateLevelDelay]);
 
 
   useEffect(() => {
     console.log("selectedFiltersStore", selectedFiltersStore);
-    drawDelay(selectedToggle);
+    calculateStateLevelDelay();
   }, [selectedFiltersStore]);
 
   useEffect(() => {
-    console.log("selectedState", SelectedState);
+    //clear circles drawn previously
+    clearCircles();
+
+    //state disselected
+    if (SelectedState === null)
+    {  
+      return
+    } 
+
     dispatch(flight_actions.set_flight_selected_state(SelectedState));
     //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
     let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
-    console.log(url)
     axios.get(url).then((res) => {
-      console.log('state_data',res.data);
       if(res.data.length>0){
         setShowGraphs(true);
         drawCircles(res.data);
         showTooltip(res.data);
       }
     });
+
+    map.current?.getLayers().forEach((layer) => {
+        if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_")) 
+        {
+          console.log('Yash : Layers on map ', layer.get('id'));
+        }
+  });
+
+
   }, [SelectedState]);
 
   return (
