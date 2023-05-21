@@ -44,6 +44,8 @@ import Layer from "ol/renderer/Layer";
 import { features } from "process";
 import BarChart from "./graphs/BarChart";
 import { GroupedBarChart } from "./graphs/GroupedBarChart";
+import { VerticalBarChart } from "./graphs/VerticalBarChart";
+
 
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
@@ -75,7 +77,11 @@ function MapComponent() {
   const [averageStateLevelDelay, setAverageStateLevelDelay] = useState<{[key:string]:{[key:string]:number}}>({});
   const [isStateSelected, setIsStateSelected] = useState(false);
   const [initLoad,setInitLoad] = useState(false);
+  const [airportLayerList, setAirportLayerList] = useState<Array<VectorLayer<VectorSource>>>([]);
   const [Graph1Dic, setGraph1Dic] = useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({});
+  const [circleData, setCircleData] = useState<Array<{[key:string]:any}>>([]);
+  const [triggerRender,setTriggerRender] = useState<number>((0));
+  const [lastClick,setLastClick] = useState<number[]>([]);
   const [LevelZeroGraphData,setLevelZeroGraphData]=useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({
     "graph1":{},//month VS delay
     "graph2":{} //carrier VS delay
@@ -85,6 +91,7 @@ function MapComponent() {
     "graph1":{},//month VS delay
     "graph2":{} //carrier VS delay
   })
+  
 
 
 
@@ -159,6 +166,10 @@ function MapComponent() {
     dispatch(flight_actions.set_flight_filters(globalFilter));
   }, [globalFilter]);
 
+  useEffect(() => {
+    console.log("lastClick updated", lastClick);
+
+  }, [lastClick]);
 
 
   const handleFilterClick = () =>{
@@ -459,27 +470,22 @@ function MapComponent() {
 
   };
 
-  const clearCircles = () => {
-    // Clear all previous layers except the basemap
-    map.current?.getLayers().forEach((layer) => {
-      if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_")) {
-        console.log('removing layer', layer.get('id'));
-        map.current?.removeLayer(layer);
-      }
-    });
-    map.current?.render();
-  }
-
   const drawCircles = (data: any[]) => {
-    // Clear all previous layers except the basemap
-    // map.current?.getLayers().forEach((layer) => {
-    //   if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_")) {
-    //     console.log('removing layer', layer.get('id'));
-    //     map.current?.removeLayer(layer);
-    //   }
-    // });
+
+    airportLayerList.forEach((layer)=>{
+       console.log("removing circle layer")
+       map.current?.removeLayer(layer);
+    })
+
+    if(SelectedState==null){
+      setAirportLayerList([]);
+    }
+
+    let tempAirportLayerList:any = []
     data.forEach((d) => {
       console.log('drawing circle for', d.airport_name, d.longitude, d.latitude);
+      if (selectedToggle.startsWith(d.direction))
+      {
       const center = [d.longitude, d.latitude];
       const radius = (d.delay - colorScaleMinMaxStore[0]) / (colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
       const color = [255, 0, 0, 0.25];
@@ -491,14 +497,14 @@ function MapComponent() {
       });
       const feature = new Feature(circle);
       feature.setStyle(style);
-  
+      
       const vectorSource = new VectorSource({ features: [feature] });
       const vectorLayer = new VectorLayer({ source: vectorSource, zIndex: 2 });
   
-      // Set the ID for the vector layer
+      //Set the ID for the vector layer
       vectorLayer.set('id', 'airport_' + d.airport_name);
   
-      // Add an event listener to show the tooltip when the user clicks on the circle
+      //Add an event listener to show the tooltip when the user clicks on the circle
       vectorLayer.on('change', (e: any) => {
         const layerId = e.target?.get('id');
         if (e.target instanceof VectorLayer && layerId?.startsWith('airport_')) {
@@ -515,10 +521,13 @@ function MapComponent() {
   
       if (map.current) {
         map.current.addLayer(vectorLayer);
+        tempAirportLayerList.push(vectorLayer);
         map.current.getView().fit(circle.getExtent(), { padding: [20, 20, 20, 20], duration: 1000 });
       }
+    }
     });
-  
+
+    setAirportLayerList(tempAirportLayerList)
     map.current?.getView().setZoom(5.5);
 
   };
@@ -686,15 +695,20 @@ function MapComponent() {
   
   const drawDelay = ( seletedToggle:string ) => {
       try {
-        if(seletedToggle === "arrival"){
+        if (selectedToggle === 'arrival') {
           Object.keys(regionDelayData).forEach((key) => {
-            const colorScaleArrival = d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']]);
+            const colorScaleArrival = d3
+              .scaleSequential(d3.interpolateRgb("rgba(255, 255, 128, 0.5)", "rgba(255, 204, 77, 0.5)"))
+              .domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']]);
             drawStateColor(stateMap[key], colorScaleArrival(averageStateLevelDelay['arrival'][key]));
           });
-
-          dispatch(flight_actions.set_flight_legend("arrival"))
-          dispatch(flight_actions.set_flight_legend_minmax([averageStateLevelDelay['arrival']['min'],averageStateLevelDelay['arrival']['max']]))
-          dispatch(flight_actions.set_flight_color_scale(d3.scaleSequential(d3.interpolateRgb("rgba(255, 192, 203, 0.5)","rgba(139, 0, 0, 0.5)")).domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']])))
+        
+          dispatch(flight_actions.set_flight_legend('arrival'));
+          dispatch(flight_actions.set_flight_legend_minmax([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']]));
+          dispatch(flight_actions.set_flight_color_scale(
+            d3.scaleSequential(d3.interpolateRgb("rgba(255, 255, 128, 0.5)", "rgba(255, 204, 77, 0.5)"))
+              .domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']])
+          ));
         }
       
         if(seletedToggle === "departure"){
@@ -788,12 +802,10 @@ function MapComponent() {
         }),
       });
       
-      map.current.addInteraction(select);
-      
-      select.on('select', (event: { selected: string | any[]; }) => {
+      select.on('select', (event: { mapBrowserEvent: MapBrowserEvent<UIEvent>, selected: string | any[]}) => {
         try {
-          console.log('state select event', event);
-      
+          console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
+          setLastClick(event.mapBrowserEvent.pixel);
           if (SelectedState !== event.selected[0].get('name')) {
             if (event.selected.length > 0) {
               setSelectedState(event.selected[0].get('name'));
@@ -814,6 +826,8 @@ function MapComponent() {
           setIsStateSelected(false);
         }
       });
+
+      map.current.addInteraction(select);
 
       // set false after map is loaded
       map.current.on("rendercomplete", () => {
@@ -865,10 +879,13 @@ function MapComponent() {
 
   //trigger drawDelay
   useEffect(() => {
+    setTriggerRender(triggerRender+1);
     drawDelay(selectedToggle);
+    
   }, [selectedToggle]);
 
   useEffect(() => {
+    setTriggerRender(triggerRender+1);
     drawDelay(selectedToggle);
   }, [averageStateLevelDelay]);
 
@@ -878,43 +895,62 @@ function MapComponent() {
     dispatch(flight_actions.set_flight_chart_data1(Graph1Dic))
   }, [Graph1Dic]);
 
+  //Render
+  useEffect(() => {
+    //drawDelay(selectedToggle);
+    drawCircles(circleData);
+    //fireClickEvent(lastClick[0],lastClick[1]);
+  }, [triggerRender]);
+
   useEffect(() => {
     console.log("selectedFiltersStore", selectedFiltersStore);
     calculateStateLevelDelay();
   }, [selectedFiltersStore]);
 
   useEffect(() => {
-    //clear circles drawn previously
-    clearCircles();
 
     //state disselected
     if (SelectedState === null)
     {  
-      return
+      setCircleData([]);
+      setTriggerRender(triggerRender+1);
     } 
-
-    dispatch(flight_actions.set_flight_selected_state(SelectedState));
-    //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
-    let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
-    axios.get(url).then((res) => {
-      if(res.data.length>0){
-        setShowGraphs(true);
-        drawCircles(res.data);
-        showTooltip(res.data);
-      }
-    });
-
-    map.current?.getLayers().forEach((layer) => {
-        if (layer instanceof VectorLayer && layer.get('id')?.startsWith("airport_")) 
-        {
-          console.log('Yash : Layers on map ', layer.get('id'));
+    
+      dispatch(flight_actions.set_flight_selected_state(SelectedState));
+      //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
+      let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
+      axios.get(url).then((res) => {
+        if(res.data.length>0){
+          //setShowGraphs(true);
+          setCircleData(res.data);
+          //showTooltip(res.data);
+          setTriggerRender(triggerRender+1);
         }
-  });
+        else{
+          setCircleData([]);
+          setTriggerRender(triggerRender+1);
+        }
+      });
+    
 
 
   }, [SelectedState]);
 
-
+  function fireClickEvent(pixelX: number, pixelY: number): void {
+    console.log("firing pixel ",pixelX,pixelY,lastClick)
+    if (pixelX != null && pixelX !=undefined && pixelY != null && pixelY !=undefined)
+    {
+      const event = new MouseEvent('click', {
+      clientX: pixelX,
+      clientY: pixelY,
+      bubbles: true,
+      cancelable: true
+      });
+  
+      document.elementFromPoint(pixelX, pixelY)?.dispatchEvent(event);
+      console.log("firing pixel ",pixelX,pixelY)
+    }
+  }
   
   return (
     <>
@@ -953,7 +989,8 @@ function MapComponent() {
                 {/* <StackedBarChart/> */}
                 {/* <BarChartBorderRadius/> */}
                 {/* <BarChart/> */}
-                <GroupedBarChart/>
+                {/* {<GroupedBarChart/>} */}
+                <VerticalBarChart/>
               </div>
               <div id="graph__container_2">
                 <PieChart data={pie_data}/>
