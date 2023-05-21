@@ -125,14 +125,31 @@ function MyResponsiveBar() {
   const [indexBy, setIndexBy] = useState<string>("");
   const [yearArr, setYearArr] = useState<any>([]);
   const [yearAvg, setYearAvg] = useState<any>({});
+  const [graphData,setgraphData] = useState<any>({
+    'arrival':[],
+    'departure':[]
+  });
+  const [activeData,setActiveData] = useState<any>([]);
   //redux store
   const chartDataStore = useSelector((state: any) => state.flight.chartData1);
-  const regionDelayData = useSelector((state: any) => state.flight.regionDelayData);
-  const selectedState = useSelector((state: any) => state.flight.selectedState);
+  //const regionDelayData = useSelector((state: any) => state.flight.regionDelayData);
+  //const selectedState = useSelector((state: any) => state.flight.selectedState);
   const selectedToggle = useSelector((state: any) => state.flight.selectedToggle);
 
 
-  console.log('selected toggle', selectedToggle)
+  const colorsArr = [
+    "hsl(310, 70%, 50%)",
+    "hsl(196, 70%, 50%)",
+    "hsl(184, 70%, 50%)",
+    "hsl(116, 70%, 50%)",
+    "hsl(292, 70%, 50%)",
+    "hsl(117, 70%, 50%)",
+    "hsl(267, 70%, 50%)",
+    "hsl(78, 70%, 50%)",
+    "hsl(257, 70%, 50%)",
+    "hsl(316, 70%, 50%)"
+  ]
+
 
   const sortData = (data: any) => {
     let labelSet = new Set();
@@ -189,26 +206,47 @@ const generateData = (data: any) => {
 }
 
 
- useEffect(() => {
-    console.log('selectedState', selectedState);
-    console.log('regionDelayData', regionDelayData[stateMap[selectedState]]);
-    let regionData = regionDelayData[stateMap[selectedState]];
-    if(regionData){
-      let labels = sortData(regionData);
-      let years = generateYear(regionData);
-      let yearAvg = generateYearAvg(regionData);
+useEffect(() => {
+  console.log('chart data store in bar chart', chartDataStore, Object.keys(chartDataStore).length);
 
-      console.log('yearAvg', yearAvg);
-      setKeys(labels)
-      setYearArr(years);
-    }
- }, [chartDataStore, regionDelayData, selectedState]);
+  if (Object.keys(chartDataStore).length > 0) {
+    let chartData: { [key: string]: { yearMonth: string; [key: string]: number | string }[] } = {
+      'arrival': [],
+      'departure': []
+    };
+
+    Object.keys(chartDataStore).map((month) => {
+      console.log('month', month);
+      chartData['arrival'].push({ yearMonth: month });
+      chartData['departure'].push({ yearMonth: month });
+
+      Object.keys(chartDataStore[month]).map((airline) => {
+        chartData['arrival'][chartData['arrival'].length - 1][airline] = chartDataStore[month][airline]['arrDelay'];
+        chartData['departure'][chartData['departure'].length - 1][airline] = chartDataStore[month][airline]['depDelay'];
+      });
+    });
+
+    console.log('after parse chartdata', chartData);
+    setgraphData(chartData);
+  }
+}, [chartDataStore]);
 
 
- useEffect(() => {
-    console.log('keys', keys);
-    console.log('year', yearArr);
-}, [keys, yearArr]);
+
+
+ useEffect(()=>{
+  console.log('selected toggle in bar chart',selectedToggle)
+  if(Object.keys(chartDataStore).length > 0 && selectedToggle==='arrival'){
+    setActiveData(graphData['arrival'])
+  }
+  else if(Object.keys(chartDataStore).length > 0 && selectedToggle==='departure'){
+    setActiveData(graphData['departure'])
+  }
+ },[selectedToggle,graphData])
+
+ useEffect(()=>{
+  console.log('active data',activeData)
+ },[activeData])
 
   return (
     <>

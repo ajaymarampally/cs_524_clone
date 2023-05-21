@@ -43,6 +43,7 @@ import MapBrowserEvent from 'ol/MapBrowserEvent';
 import Layer from "ol/renderer/Layer";
 import { features } from "process";
 import BarChart from "./graphs/BarChart";
+import { GroupedBarChart } from "./graphs/GroupedBarChart";
 
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
@@ -68,13 +69,14 @@ function MapComponent() {
   const [airportInfo, setAirportInfo] = useState<any>(null);
   const [airportName, setAirportName] = useState<string>('');
   const [regionDelayData, setRegionDelayData] = useState<any>({});
-  const [chartData1, setChartData1] = useState<any>(null);
   const [consolidatedChartData, setConsolidatedChartData] = useState<any>(null);
   const [showGraphs, setShowGraphs] = useState<boolean>(false);
   const [SelectedState, setSelectedState] = useState<any>(null);
   const [averageStateLevelDelay, setAverageStateLevelDelay] = useState<{[key:string]:{[key:string]:number}}>({});
   const [isStateSelected, setIsStateSelected] = useState(false);
   const [initLoad,setInitLoad] = useState(false);
+  const [Graph1Dic, setGraph1Dic] = useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({});
+
 
 
   //colorscaleProps of type d3.scaleSequential(d3.interpolateRgb("rgba(139, 0, 0, 0.5)", "rgba(255, 192, 203, 0.5)")).domain([min, max])
@@ -90,7 +92,6 @@ function MapComponent() {
   const selectedFiltersStore = mapStore.flight.selectedFilters;
   const regionalDataStore = mapStore.flight.regionDelayData;
   const colorScaleMinMaxStore = mapStore.flight.LegendMinMax;
-
 
   const [selectedFilters, setSelectedFilters] = React.useState<{[key: string]: string[]}>({
     "state": [],
@@ -323,48 +324,6 @@ function MapComponent() {
     return [airport.longitude, airport.latitude]
   };
 
-  //function to make chartData
-  const buildChartData1 = (state:string,year:string,carrier:string,size:string,delay:number) =>{
-    console.log('chartData1',chartData1)
-    if(!chartData1.hasOwnProperty(size) || !chartData1[size].hasOwnProperty(year)) {
-      setChartData1((prevState:any) => {
-        return {
-          ...prevState,
-          [size]: {
-            ...prevState[size],
-            [year]: [0, 0]
-          }
-        }
-      });
-    }
-
-    //chartData1[size][year][0] += delay;
-    //chartData1[size][year][1] += 1;
-
-    setChartData1((prevState:any) => {
-      const prevSize = prevState.hasOwnProperty(size) ? prevState[size] : {};
-      return {
-        ...prevState,
-        [size]: {
-          ...prevSize,
-          [year]: [prevSize.hasOwnProperty(year) ? prevSize[year][0] + delay : delay, prevSize.hasOwnProperty(year) ? prevSize[year][1] + 1 : 1]
-        }
-      }
-    });
-  }
-
-  const consolidateChartData = (chartData:any) =>{
-    let newChartData:any = {};
-    Object.keys(chartData).forEach((size) => {
-      newChartData[size] = {};
-      Object.keys(chartData[size]).forEach((year) => {
-        newChartData[size][year] = chartData[size][year][0]/chartData[size][year][1];
-      });
-    });
-    return newChartData;
-
-  }
-
   const showTooltip = (data: any) => {
     // Get reference to the tooltip container element
     const tooltipContainer = document.getElementById('tooltip__container');
@@ -564,7 +523,7 @@ function MapComponent() {
     let maxDep = -Infinity;
     let avgDictDep : {[key:string]:number} = {};
 
-    setChartData1({});
+    let TempGraph1Dic : any = {};
 
     Object.keys(regionDelayData).forEach((key) => {
 
@@ -583,9 +542,17 @@ function MapComponent() {
                     valueDep += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
                     //increment cnt
                     cnt += 1;
-                    //build chartData1
-                    buildChartData1(key,year,carrier,size,parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']));
-                    //update min and max
+                    
+                    if(!TempGraph1Dic[year]){
+                      TempGraph1Dic[year]={}
+                    }
+                    if(!TempGraph1Dic[year][carrier])
+                    {
+                      TempGraph1Dic[year][carrier] = { "arrVal":0,"depVal":0,"cnt":0}
+                    }
+                    TempGraph1Dic[year][carrier]["arrVal"] += valueArr
+                    TempGraph1Dic[year][carrier]["depVal"] += valueDep
+                    TempGraph1Dic[year][carrier]["cnt"] += 1                    
                   }
                   else{
                     //add 0 to value
@@ -630,12 +597,26 @@ function MapComponent() {
         'arrival': avgDictArr,
         'departure' : avgDictDep
       }
-    
     )
-  }
-      
-  
 
+    let FinalGraph1Dic : any = {};
+    Object.keys(TempGraph1Dic).forEach((month) => {
+      if(!FinalGraph1Dic[month]){
+        FinalGraph1Dic[month]={}
+      }
+      for(let carrier in TempGraph1Dic[month]){
+        if(!FinalGraph1Dic[month][carrier]){
+          FinalGraph1Dic[month][carrier]={}
+        }
+
+        FinalGraph1Dic[month][carrier]["arrDelay"]=TempGraph1Dic[month][carrier]["arrVal"]/TempGraph1Dic[month][carrier]["cnt"]
+        FinalGraph1Dic[month][carrier]["depDelay"]=TempGraph1Dic[month][carrier]["depVal"]/TempGraph1Dic[month][carrier]["cnt"]
+      }
+
+    });
+    setGraph1Dic(FinalGraph1Dic);
+  }     
+  
   const drawDelay = ( seletedToggle:string ) => {
       try {
         if(seletedToggle === "arrival"){
@@ -665,18 +646,14 @@ function MapComponent() {
 
     };
 
-  // useEffect
-  useEffect(() => {
-    setConsolidatedChartData(chartData1);
-  },[chartData1]
-  );
+ 
 
-  //useEffect consolidated data
-  useEffect(() => {
-    console.log('consolidatedChartData',consolidatedChartData)
-    dispatch(flight_actions.set_flight_chart_data1(consolidatedChartData))
-  },[consolidatedChartData]
-  );
+  // //useEffect consolidated data
+  // useEffect(() => {
+  //   console.log('consolidatedChartData',consolidatedChartData)
+  //   dispatch(flight_actions.set_flight_chart_data1(consolidatedChartData))
+  // },[consolidatedChartData]
+  // );
 
   // useEffect
   useEffect(() => {
@@ -828,6 +805,11 @@ function MapComponent() {
     drawDelay(selectedToggle);
   }, [averageStateLevelDelay]);
 
+  //Redux update graph1 data
+  useEffect(() => {
+    console.log("Graph1Dic : ",Graph1Dic)
+    dispatch(flight_actions.set_flight_chart_data1(Graph1Dic))
+  }, [Graph1Dic]);
 
   useEffect(() => {
     console.log("selectedFiltersStore", selectedFiltersStore);
@@ -903,7 +885,8 @@ function MapComponent() {
               <div id="graph__container">
                 {/* <StackedBarChart/> */}
                 {/* <BarChartBorderRadius/> */}
-                <BarChart/>
+                {/* <BarChart/> */}
+                <GroupedBarChart/>
               </div>
               <div id="graph__container_2">
                 <PieChart data={pie_data}/>
