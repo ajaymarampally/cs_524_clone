@@ -249,8 +249,7 @@ function MapComponent() {
         map.current?.removeLayer(layer);
       }
     });
-
-
+    console.log('state','value',value,state)
     const url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
     // fetch the states geojson
     fetch(url)
@@ -489,7 +488,7 @@ function MapComponent() {
       const center = [d.longitude, d.latitude];
       const radius = (d.delay - colorScaleMinMaxStore[0]) / (colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
       const color = [255, 0, 0, 0.25];
-  
+
       const circle = new Circle(center, radius * 10);
       const style = new Style({
         fill: new Fill({ color: color }),
@@ -518,7 +517,7 @@ function MapComponent() {
           });
         }
       });
-  
+
       if (map.current) {
         map.current.addLayer(vectorLayer);
         tempAirportLayerList.push(vectorLayer);
@@ -561,9 +560,9 @@ function MapComponent() {
               if(selectedFiltersStore['carrier'][carrier]){
                 for(let size in regionDelayData[key][year][carrier]){
                   if(regionDelayData[key][year][carrier][size]['arr_delay'] != null){
-                    //parse the value to float and add it to value
-                    valueArr += parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']);
-                    valueDep += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
+                    //parse the value to float and add it to value with modulus to make it positive
+                    valueArr += Math.abs(parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']));
+                    valueDep += Math.abs(parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']));
                     //increment cnt
                     cnt += 1;
                     
@@ -710,7 +709,7 @@ function MapComponent() {
               .domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']])
           ));
         }
-      
+
         if(seletedToggle === "departure"){
           Object.keys(regionDelayData).forEach((key) => {
             const colorScaleDeparture = d3.scaleSequential(d3.interpolateRgb("rgba(173, 216, 230, 0.5)","rgba(0, 0, 255, 0.5)")).domain([averageStateLevelDelay['departure']['min'], averageStateLevelDelay['departure']['max']]);
@@ -738,7 +737,7 @@ function MapComponent() {
 
   // useEffect
   useEffect(() => {
-    
+
     if (mapRef.current) {
 
       const tile = new TileLayer({
@@ -810,7 +809,7 @@ function MapComponent() {
             if (event.selected.length > 0) {
               setSelectedState(event.selected[0].get('name'));
               setIsStateSelected(true);
-              
+
               if (map.current) {
                 map.current.getView().fit(event.selected[0].getGeometry().getExtent(), {
                   padding: [20, 20, 20, 20],
