@@ -91,7 +91,7 @@ function MapComponent() {
     "graph1":{},//month VS delay
     "graph2":{} //carrier VS delay
   })
-  
+
 
 
 
@@ -497,13 +497,13 @@ function MapComponent() {
       });
       const feature = new Feature(circle);
       feature.setStyle(style);
-      
+
       const vectorSource = new VectorSource({ features: [feature] });
       const vectorLayer = new VectorLayer({ source: vectorSource, zIndex: 2 });
-  
+
       //Set the ID for the vector layer
       vectorLayer.set('id', 'airport_' + d.airport_name);
-  
+
       //Add an event listener to show the tooltip when the user clicks on the circle
       vectorLayer.on('change', (e: any) => {
         const layerId = e.target?.get('id');
@@ -547,7 +547,7 @@ function MapComponent() {
 
     let level1Graph1:any = {};
     let level1Graph2:any = {};
-    
+
 
     Object.keys(regionDelayData).forEach((key) => {
 
@@ -566,7 +566,7 @@ function MapComponent() {
                     valueDep += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
                     //increment cnt
                     cnt += 1;
-                    
+
                     if(!TempGraph1Dic[year]){
                       TempGraph1Dic[year]={}
                     }
@@ -611,11 +611,11 @@ function MapComponent() {
                     level1Graph1[key][year]["arrVal"] += valueArr
                     level1Graph1[key][year]["depVal"] += valueDep
                     level1Graph1[key][year]["cnt"] += 1
-                    
+
                     level1Graph2[key][carrier]["arrVal"] += valueArr
                     level1Graph2[key][carrier]["depVal"] += valueDep
                     level1Graph2[key][carrier]["cnt"] += 1
-                    
+
                   }
                   else{
                     //add 0 to value
@@ -630,6 +630,8 @@ function MapComponent() {
       }
       //calculate average of valueArr
       //console.log(value,cnt)
+      valueArr = Math.abs(valueArr);
+      valueDep = Math.abs(valueDep);
       if(valueArr>0){
         let avgArr = valueArr / cnt;
         //update min and max
@@ -691,8 +693,8 @@ function MapComponent() {
     });
 
     setGraph1Dic(FinalGraph1Dic);
-  }     
-  
+  }
+
   const drawDelay = ( seletedToggle:string ) => {
       try {
         if (selectedToggle === 'arrival') {
@@ -702,7 +704,7 @@ function MapComponent() {
               .domain([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']]);
             drawStateColor(stateMap[key], colorScaleArrival(averageStateLevelDelay['arrival'][key]));
           });
-        
+
           dispatch(flight_actions.set_flight_legend('arrival'));
           dispatch(flight_actions.set_flight_legend_minmax([averageStateLevelDelay['arrival']['min'], averageStateLevelDelay['arrival']['max']]));
           dispatch(flight_actions.set_flight_color_scale(
@@ -727,7 +729,7 @@ function MapComponent() {
 
     };
 
- 
+
 
   // //useEffect consolidated data
   // useEffect(() => {
@@ -801,7 +803,7 @@ function MapComponent() {
           }),
         }),
       });
-      
+
       select.on('select', (event: { mapBrowserEvent: MapBrowserEvent<UIEvent>, selected: string | any[]}) => {
         try {
           console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
@@ -881,7 +883,7 @@ function MapComponent() {
   useEffect(() => {
     setTriggerRender(triggerRender+1);
     drawDelay(selectedToggle);
-    
+
   }, [selectedToggle]);
 
   useEffect(() => {
@@ -911,11 +913,11 @@ function MapComponent() {
 
     //state disselected
     if (SelectedState === null)
-    {  
+    {
       setCircleData([]);
       setTriggerRender(triggerRender+1);
-    } 
-    
+    }
+
       dispatch(flight_actions.set_flight_selected_state(SelectedState));
       //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
       let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
@@ -931,7 +933,7 @@ function MapComponent() {
           setTriggerRender(triggerRender+1);
         }
       });
-    
+
 
 
   }, [SelectedState]);
@@ -946,19 +948,19 @@ function MapComponent() {
       bubbles: true,
       cancelable: true
       });
-  
+
       document.elementFromPoint(pixelX, pixelY)?.dispatchEvent(event);
       console.log("firing pixel ",pixelX,pixelY)
     }
   }
-  
+
   return (
     <>
       <div style={{ position: "relative" }}>
         <div id="opertaions__container">
-          <div id="search__bar">
+          {/* <div id="search__bar">
             <SearchBar setMapLocation={setMapLocation} />
-          </div>
+          </div> */}
           <div id="filter__container">
             <FilterComponent />
           </div>
