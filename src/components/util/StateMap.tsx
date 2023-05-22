@@ -56,6 +56,8 @@ const stateMap: { [key: string]: string } = {
   "US-PR": "Puerto Rico",
   "US-UM": "United States Minor Outlying Islands",
   "US-VI": "Virgin Islands, U.S.",
+  "PR-U-A": "Puerto Rico",
+  "VI-U-A": "Virgin Islands",
   Alabama: "US-AL",
   Alaska: "US-AK",
   Arizona: "US-AZ",

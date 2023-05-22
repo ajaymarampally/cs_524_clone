@@ -1,4 +1,7 @@
 import { ResponsivePie } from '@nivo/pie'
+import { useSelector } from "react-redux";
+import stateMap from "../util/StateMap";
+import { useEffect, useState } from "react";
 
 // make sure parent container have a defined height when using
 // responsive component, otherwise height will be 0 and
@@ -12,14 +15,77 @@ interface PieData {
     value: number;
     color: string;
   }
-  
+
   interface MyResponsivePieProps {
     data: PieData[];
   }
 
-const MyResponsivePie = ({data}: MyResponsivePieProps) => (
-    <ResponsivePie
-        data={data}
+export default function MyResponsivePie() {
+     //useState constants
+     const [graphData,setgraphData] = useState<any>({
+        'arrival':[],
+        'departure':[]
+      });
+      const [activeData,setActiveData] = useState<any>([]);
+
+      const chartDataStore = useSelector((state: any) => state.flight.chartData1);
+      const selectedToggle = useSelector((state: any) => state.flight.selectedToggle);
+
+      const colorMap:any = {
+        'AA':'#2b67c1',
+        'AS':'#2b67c1',
+        'CO':'#2b67c1',
+        'DL':'#2b67c1',
+        'HP':'#2b67c1',
+        'MQ':'#2b67c1',
+        'NW':'#2b67c1',
+        'UA':'#2b67c1',
+        'US':'#2b67c1',
+        'WN':'#2b67c1'
+    }
+
+      //functions
+
+        const handleGraphData = (data:any) =>{
+            /*
+                let pie_data = []
+                create a new object in the pie_data array for every airline in the data object
+                set the object as
+                {
+                    id:airline,
+                    label:airline,
+                    value: if selectedToggle is arrival then data[airline]['arrVal']/data[airline]['cnt'] else data[airline]['depVal']/data[airline]['cnt'],
+                    color: set color according to colorMap
+                }
+            */
+              let pie_data: { id: string; label: string; value: number; color: any; }[] = []
+                Object.keys(data).map((airline:string)=>{
+                    pie_data.push({
+                        id:airline,
+                        label:airline,
+                        value:selectedToggle==='arrival'? parseFloat((data[airline]['arrVal']/data[airline]['cnt']).toFixed(2)) : parseFloat((data[airline]['depVal']/data[airline]['cnt']).toFixed(2)),
+                        color:colorMap[airline]
+                    })
+                }
+                )
+                return pie_data;
+
+
+        }
+
+
+     //useEffect hooks
+ useEffect(()=>{
+    console.log('selected toggle in bar chart',selectedToggle)
+      let data = handleGraphData(chartDataStore['graph2'])
+      console.log('pie chart data',data)
+      setActiveData(data)
+   },[selectedToggle, graphData, chartDataStore])
+
+   if(Object.keys(activeData).length > 0 ){
+      return(
+        <ResponsivePie
+        data={activeData}
         margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
         innerRadius={0.5}
         padAngle={0.7}
@@ -69,68 +135,82 @@ const MyResponsivePie = ({data}: MyResponsivePieProps) => (
                 spacing: 10
             }
         ]}
-        fill={[
-            {
-                match: {
-                    id: 'ruby'
+        fill={
+            [
+                {
+                    match: {
+                        id: 'AA'
+                    },
+                    id: 'dots'
                 },
-                id: 'dots'
-            },
-            {
-                match: {
-                    id: 'c'
+                {
+                    match: {
+                        id: 'AS'
+                    },
+                    id: 'dots'
                 },
-                id: 'dots'
-            },
-            {
-                match: {
-                    id: 'go'
+                {
+                    match: {
+                        id: 'CO'
+                    },
+                    id: 'dots'
                 },
-                id: 'dots'
-            },
-            {
-                match: {
-                    id: 'python'
+                {
+                    match: {
+                        id: 'DL'
+                    },
+                    id: 'dots'
                 },
-                id: 'dots'
-            },
-            {
-                match: {
-                    id: 'scala'
+                {
+                    match: {
+                        id: 'HP'
+                    },
+                    id: 'dots'
                 },
-                id: 'lines'
-            },
-            {
-                match: {
-                    id: 'lisp'
+                {
+                    match: {
+                        id: 'MQ'
+                    },
+                    id: 'dots'
                 },
-                id: 'lines'
-            },
-            {
-                match: {
-                    id: 'elixir'
+                {
+                    match: {
+                        id: 'NW'
+                    },
+                    id: 'lines'
                 },
-                id: 'lines'
-            },
-            {
-                match: {
-                    id: 'javascript'
+                {
+                    match: {
+                        id: 'UA'
+                    },
+                    id: 'lines'
                 },
-                id: 'lines'
-            }
-        ]}
+                {
+                    match: {
+                        id: 'US'
+                    },
+                    id: 'lines'
+                },
+                {
+                    match: {
+                        id: 'WN'
+                    },
+                    id: 'lines'
+                }
+            ]
+        }
         legends={[
             {
-                anchor: 'bottom',
-                direction: 'row',
+                anchor: 'right',
+                direction: 'column',
                 justify: false,
-                translateX: 0,
-                translateY: 56,
-                itemsSpacing: 0,
+                translateX: 30,
+                translateY: 20,
+                itemsSpacing: 22,
                 itemWidth: 100,
                 itemHeight: 18,
                 itemTextColor: '#999',
-                itemDirection: 'left-to-right',
+                itemDirection: 'top-to-bottom',
                 itemOpacity: 1,
                 symbolSize: 18,
                 symbolShape: 'circle',
@@ -145,6 +225,16 @@ const MyResponsivePie = ({data}: MyResponsivePieProps) => (
             }
         ]}
     />
-)
+      )
+   }
+   else{
+      return(
+          <div>
+              Loading...
+          </div>
+      )
+   }
 
-export default MyResponsivePie
+
+}
+

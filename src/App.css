@@ -100,16 +100,38 @@
 }
 
 #filter__icon {
-	width: 40px;
-	height: 40px;
-	cursor: pointer;
-	position: absolute;
-	top: 18px;
-	left: 570px;
-	background: white;
-	padding: 3px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  position: absolute;
+  top: 15px;
+  left: 70px;
+  background: white;
+  padding: 3px;
   opacity: 0.4;
   border-radius: 8px;
+}
+
+.props__container {
+  position: absolute;
+  top: 12px;
+  left: 135px;
+  height: 58.5px;
+  z-index: 1;
+}
+
+#main__filter__container {
+  position: absolute;
+  top: 10px;
+  left: 370px;
+  width: 500px;
+  height: 58.5px;
+  background-color: #333333;
+  border: 1px solid #000;
+  border-radius: 15px;
+  padding: 10px;
+  opacity: 0.7;
+  z-index: 2;
 }
 
 #filter__icon:hover{
@@ -151,13 +173,6 @@
   text-transform: lowercase;
 }
 
-.props__container{
-  position: absolute;
-  top: 15px;
-  left: 650px;
-  height: 58.5px;
-  z-index: 1;
-}
 
 .prop__options{
   display: flex;
@@ -255,20 +270,6 @@
   font-size: 20px;
   font-weight: bold;
   color: black;
-}
-
-#main__filter__container {
-	position: absolute;
-	top: 10px;
-	left: 45px;
-	width: 500px;
-	height: 58.5px;
-	background-color: #333333;
-	border: 1px solid #000;
-	border-radius: 15px;
-	padding: 10px;
-	opacity: 0.7;
-  z-index:2;
 }
 
 #main__filter__container:hover{
