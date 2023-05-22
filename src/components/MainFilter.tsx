@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/reduxRoot";
 import stateMap from "./util/StateMap";
@@ -55,6 +55,7 @@ function MainFilter() {
   const [isCarrierOpen, setIsCarrierOpen] = React.useState<boolean>(false);
   const [filtersState, setFiltersState] = React.useState<any>(null);
   const [filterFlag, setFilterFlag] = React.useState<boolean>(false);
+  const [activeData, setActiveData] = React.useState<any>();
   //functions
   const onChange = (e: CheckboxChangeEvent) => {
     const id = e.target.id;
@@ -127,14 +128,13 @@ function MainFilter() {
         e.g filtersState['carrier'] = { 'AA': true, 'AS': true, ...}
     */
     console.log('sort filters',data)
-    setFilterFlag(true);
     //sort state
     let stateDict: { [key: string]: boolean } = {};
     Object.keys(data['state']).sort().forEach((key: string) => {
         stateDict[key] = data['state'][key];
     }
     );
-    console.log('stateDict',stateDict);
+    console.log('statedict',stateDict)
     setFiltersState((prevState:any) => ({
         ...prevState,
         state: stateDict,
@@ -151,7 +151,7 @@ function MainFilter() {
         ...prevState,
         year: yearDict,
     }));
-
+    console.log('yearDict',yearDict)
 
     //sort size
     let sizeDict: { [key: string]: boolean } = {};
@@ -163,6 +163,8 @@ function MainFilter() {
         ...prevState,
         size: sizeDict,
     }));
+    console.log('sizeDict',sizeDict)
+
 
     //sort carrier
     let carrierDict: { [key: string]: boolean } = {};
@@ -175,6 +177,14 @@ function MainFilter() {
         ...prevState,
         carrier: carrierDict,
     }));
+    console.log('carrierDict',carrierDict)
+    setFilterFlag(true);
+    setActiveData({
+        'state': stateDict,
+        'year': yearDict,
+        'size': sizeDict,
+        'carrier': carrierDict,
+    });
 
 };
 
@@ -191,21 +201,29 @@ function MainFilter() {
             sortFilters(filtersState);
         }
         //console.log('sending dispatch')
-        //dispatch(flight_actions.set_flight_filters(filtersState));
+        if(filterFlag){
+            console.log('sending dispatch')
+            dispatch(flight_actions.set_flight_filters(filtersState));
+        }
 
-    },[filtersState]);
+    },[dispatch, filterFlag, filtersState]);
 
     React.useEffect(() => {
         console.log('filters_store',FiltersStore);
-        setFiltersState(FiltersStore);
-    }, [FiltersStore]);
+        if(!filterFlag){
+            setFiltersState(FiltersStore);
+        }
+    }, [FiltersStore, filterFlag]);
 
+    useEffect(() => {
+        setFilterFlag(false);
+    }, []);
 
 
   return (
     <>
       <div className="row">
-        <div className="col-2">
+        <div className="col-3">
             <button
                 className="btn  btn-outline-light dropdown-toggle"
                 type="button"
@@ -215,12 +233,12 @@ function MainFilter() {
                 State
             </button>
             {
-                filtersState && (
+                activeData && (
                     <ul className={`dropdown-menu ${isStateOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
-                    {Object.keys(filtersState['state']).map((key, index) => (
+                    {Object.keys(activeData['state']).map((key, index) => (
                         <li key={key}>
                             <Checkbox id="state" value={key} onChange={onChange}
-                            checked = {filtersState['state'][key]}
+                            checked = {activeData['state'][key]}
                             >{stateMap[key]}</Checkbox>
                         </li>
                     ))}
@@ -228,7 +246,7 @@ function MainFilter() {
                 )
             }
         </div>
-        <div className="col-2">
+        <div className="col-3">
             <button
                 className="btn btn-outline-light dropdown-toggle"
                 type="button"
@@ -238,11 +256,11 @@ function MainFilter() {
                 Month
             </button>
             {
-                filtersState && (
+                activeData && (
                     <ul className={`dropdown-menu ${isYearOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
-                    {Object.keys(filtersState['year']).map((key, index) => (
+                    {Object.keys(activeData['year']).map((key, index) => (
                         <li key={key}>
-                            <Checkbox checked={filtersState['year'][key]} id="year" value={key} onChange={onChange}>{yearDict[key]}</Checkbox>
+                            <Checkbox checked={activeData['year'][key]} id="year" value={key} onChange={onChange}>{yearDict[key]}</Checkbox>
                         </li>
                     ))}
                 </ul>
@@ -270,7 +288,7 @@ function MainFilter() {
                 )
             }
         </div> */}
-        <div className="col-2">
+        <div className="col-3">
             <button
                 className="btn btn-outline-light dropdown-toggle"
                 type="button"
@@ -280,18 +298,18 @@ function MainFilter() {
                 Carrier
             </button>
             {
-                filtersState && (
+                activeData && (
                     <ul className={`dropdown-menu ${isCarrierOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
-                    {Object.keys(filtersState['carrier']).map((key, index) => (
+                    {Object.keys(activeData['carrier']).map((key, index) => (
                         <li key={key}>
-                            <Checkbox checked={filtersState['carrier'][key]} id="carrier" value={key} onChange={onChange}>{key}</Checkbox>
+                            <Checkbox checked={activeData['carrier'][key]} id="carrier" value={key} onChange={onChange}>{carrierDict[key]}</Checkbox>
                         </li>
                     ))}
                     </ul>
                 )
             }
         </div>
-        <div className="col-2">
+        <div className="col-3">
         <div className="d-flex justify-content-center">
             <div>
                 <button id="apply__button" onClick={handleFilter} type="button">

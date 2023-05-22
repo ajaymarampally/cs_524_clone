@@ -509,6 +509,7 @@ function MapComponent() {
         const layerId = e.target?.get('id');
         if (e.target instanceof VectorLayer && layerId?.startsWith('airport_')) {
           const features = e.target.getSource().getFeatures();
+          console.log('features of the selected circle', features);
           features.forEach((feature: any) => {
             feature.on('click', (evt: any) => {
               const data = feature.getProperties();
@@ -629,6 +630,8 @@ function MapComponent() {
       }
       //calculate average of valueArr
       //console.log(value,cnt)
+      valueArr = Math.abs(valueArr);
+      valueDep = Math.abs(valueDep);
       if(valueArr>0){
         let avgArr = valueArr / cnt;
         //update min and max
@@ -955,9 +958,9 @@ function MapComponent() {
     <>
       <div style={{ position: "relative" }}>
         <div id="opertaions__container">
-          <div id="search__bar">
+          {/* <div id="search__bar">
             <SearchBar setMapLocation={setMapLocation} />
-          </div>
+          </div> */}
           <div id="filter__container">
             <FilterComponent />
           </div>
