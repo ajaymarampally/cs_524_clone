@@ -93,7 +93,6 @@ const handleGraphData = (data:any) => {
 
  //useEffect hooks
  useEffect(()=>{
-  console.log('selected toggle in bar chart',selectedToggle)
     let data = handleGraphData(chartDataStore['graph1'])
     setActiveData(data)
  },[chartDataStore, selectedToggle])

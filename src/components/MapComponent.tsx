@@ -59,7 +59,6 @@ const useStyles = makeStyles(() => ({
 }));
 
 function MapComponent() {
-
   //constants
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -82,6 +81,12 @@ function MapComponent() {
   const [circleData, setCircleData] = useState<Array<{[key:string]:any}>>([]);
   const [triggerRender,setTriggerRender] = useState<number>((0));
   const [lastClick,setLastClick] = useState<number[]>([]);
+
+  const [graphDataAdapter,setGraphDataAdapeter] = useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({
+    "graph1":{},//month VS delay
+    "graph2":{} //carrier VS delay
+  });
+
   const [LevelZeroGraphData,setLevelZeroGraphData]=useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({
     "graph1":{},//month VS delay
     "graph2":{} //carrier VS delay
@@ -91,6 +96,7 @@ function MapComponent() {
     "graph1":{},//month VS delay
     "graph2":{} //carrier VS delay
   })
+
 
 
 
@@ -159,11 +165,6 @@ function MapComponent() {
     //console.log("global filter map component", globalFilter);
     dispatch(flight_actions.set_flight_filters(globalFilter));
   }, [globalFilter]);
-
-  useEffect(() => {
-    console.log("lastClick updated", lastClick);
-
-  }, [lastClick]);
 
 
   const handleFilterClick = () =>{
@@ -719,6 +720,26 @@ function MapComponent() {
       }
 
     });
+
+    // fs = filteredStates = [Florida,Texas,Illinois]
+    /*
+    if SelectedState!=null{
+      fs.forEach(s)={
+      if s == SelectedState:
+      SelectedState = null
+    }
+  }
+    
+    */ 
+  if(SelectedState!=null){
+    Object.keys(selectedFiltersStore['state']).forEach((state:any)=>{
+      if(stateMap[SelectedState] === state&& selectedFiltersStore['state'][state] === false){
+        setSelectedState(null)
+      }
+    })  
+  }
+
+
     avgDictArr['min'] = minArr;
     avgDictArr['max'] = maxArr;
 
@@ -876,8 +897,15 @@ function MapComponent() {
         try {
           console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
           setLastClick(event.mapBrowserEvent.pixel);
-          if (SelectedState !== event.selected[0].get('name')) {
-            if (event.selected.length > 0) {
+          /*
+            sfs --> sfs[selected_state] === false 
+          */
+
+
+          if (SelectedState !== event.selected[0].get('name') ) {
+            if (event.selected.length > 0 && selectedFiltersStore['state'][stateMap[event.selected[0].get('name')]] !==false ) {
+              console.log('florida should not be selected',selectedFiltersStore['state'][stateMap[event.selected[0].get('name')]],[stateMap[event.selected[0].get('name')]],selectedFiltersStore['state'])
+              
               setSelectedState(event.selected[0].get('name'));
               setIsStateSelected(true);
 
@@ -902,6 +930,7 @@ function MapComponent() {
       // set false after map is loaded
       map.current.on("rendercomplete", () => {
         setIsLoading(false);
+        setShowGraphs(true);
       });
     }
     return () => {
@@ -924,9 +953,28 @@ function MapComponent() {
   }, []);
 
   useEffect(() => {
-    console.log('level 0 graph data',LevelZeroGraphData)
-    dispatch(flight_actions.set_flight_chart_data1(LevelZeroGraphData));
-  }, [LevelZeroGraphData]);
+    dispatch(flight_actions.set_flight_chart_data1(graphDataAdapter));
+  }, [graphDataAdapter]);
+
+  useEffect(() => {
+    if (SelectedState == null)
+      setGraphDataAdapeter(LevelZeroGraphData)
+    else
+      {
+        let tempGraph = {
+          "graph1" : {},
+          "graph2" : {}
+        }
+
+        if(LevelOneGraphData["graph1"][stateMap[SelectedState]] && LevelOneGraphData["graph2"][stateMap[SelectedState]]){
+          tempGraph = {
+            "graph1" : LevelOneGraphData["graph1"][stateMap[SelectedState]],
+            "graph2" : LevelOneGraphData["graph2"][stateMap[SelectedState]]
+          } 
+        }        
+        setGraphDataAdapeter(tempGraph)
+      }
+  }, [SelectedState,LevelZeroGraphData,LevelOneGraphData]);
 
 
   useEffect(() => {
@@ -996,7 +1044,7 @@ function MapComponent() {
       let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
       axios.get(url).then((res) => {
         if(res.data.length>0){
-          //setShowGraphs(true);
+          setShowGraphs(true);
           setCircleData(res.data);
           //showTooltip(res.data);
           setTriggerRender(triggerRender+1);
