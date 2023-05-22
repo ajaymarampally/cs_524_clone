@@ -126,39 +126,33 @@ function MapComponent() {
   });
 
 
-  const pie_data = [
-    {
-      "id": "make",
-      "label": "make",
-      "value": 410,
-      "color": "hsl(60, 70%, 50%)"
-    },
-    {
-      "id": "elixir",
-      "label": "elixir",
-      "value": 470,
-      "color": "hsl(318, 70%, 50%)"
-    },
-    {
-      "id": "go",
-      "label": "go",
-      "value": 295,
-      "color": "hsl(201, 70%, 50%)"
-    },
-    {
-      "id": "c",
-      "label": "c",
-      "value": 529,
-      "color": "hsl(212, 70%, 50%)"
-    },
-    {
-      "id": "lisp",
-      "label": "lisp",
-      "value": 327,
-      "color": "hsl(114, 70%, 50%)"
-    }
-  ]
+  const carrierDict: { [key: string]: string } = {
+    AA: "American Airlines",
+    DL: "Delta Air Lines",
+    UA: "United Airlines",
+    HP: "America West Airlines",
+    NW: "Northwest Airlines",
+    WN: "Southwest Airlines",
+    US: "US Airways",
+    CO: "Continental Airlines",
+    AS: "Alaska Airlines",
+    MQ: "American Eagle Airlines",
+  };
 
+  const yearDict: { [key: string]: string } = {
+    "2002-01": "January",
+    "2002-02": "February",
+    "2002-03": "March",
+    "2002-04": "April",
+    "2002-05": "May",
+    "2002-06": "June",
+    "2002-07": "July",
+    "2002-08": "August",
+    "2002-09": "September",
+    "2002-10": "October",
+    "2002-11": "November",
+    "2002-12": "December",
+  };
 
   //useEffect
   useEffect(() => {
@@ -181,7 +175,13 @@ function MapComponent() {
   //functions
   async function parseData(newJsonData:any, regionDelayTree:any) {
     const newTree = Object.assign({}, regionDelayTree);
-
+    let filteredData:any = {
+      "state": {},
+      "year": {},
+      "size": {},
+      "carrier": {},
+      "direction": {"departures": true, "arrival": false},
+    };
     newJsonData.forEach((item:any) => {
         const { iso_region, year_month, unique_carrier, size ,delay_type,delay} = item;
         if (!newTree[iso_region]) {
@@ -203,28 +203,96 @@ function MapComponent() {
             newTree[iso_region][year_month][unique_carrier][size]['dep_delay'] = delay;
          }
 
-        setGlobalFilter((prevState:any) => {
-          return {
-            ...prevState,
-            state: {
-              ...prevState.state,
-              [iso_region]: true
-            },
-            year: {
-              ...prevState.year,
-              [year_month]: true
-            },
-            size: {
-              ...prevState.size,
-              [size]: true
-            },
-            carrier: {
-              ...prevState.carrier,
-              [unique_carrier]: true
-            },
-          }
-        });
+        if (!filteredData['state'][iso_region]) {
+          filteredData['state'][iso_region] = true;
+        }
+
+        if (!filteredData['year'][year_month]) {
+          filteredData['year'][year_month] = true;
+        }
+
+        if (!filteredData['size'][size]) {
+          filteredData['size'][size] = true;
+        }
+
+        if (!filteredData['carrier'][unique_carrier]) {
+          filteredData['carrier'][unique_carrier] = true;
+        }
+        // setGlobalFilter((prevState:any) => {
+        //   return {
+        //     ...prevState,
+        //     state: {
+        //       ...prevState.state,
+        //       [iso_region]: true
+        //     },
+        //     year: {
+        //       ...prevState.year,
+        //       [year_month]: true
+        //     },
+        //     size: {
+        //       ...prevState.size,
+        //       [size]: true
+        //     },
+        //     carrier: {
+        //       ...prevState.carrier,
+        //       [unique_carrier]: true
+        //     },
+        //   }
+        // });
+
+
+
     });
+    /*
+        sort the filteredData object
+      sort filteredData['state'] in alphabetical order according to stateMap
+      e.g filteredData['state'] = { "US-AL":true , "US-AK":true , "US-AZ":true , "US-AR":true , "US-CA":true , "US-CO":true , "US-CT":true , "US-DE":true , "US-FL":true , "US-GA":true , "US-HI":true , "US-ID":true , "US-IL":true , "US-IN":true , "US-IA":true , "US-KS":true , "US-KY":true , "US-LA":true , "US-ME":true , "US-MD":true , "US-MA":true , "US-MI":true , "US-MN":true , "US-MS":true , "US-MO":true , "US-MT":true , "US-NE":true , "US-NV":true , "US-NH":true , "US-NJ":true , "US-NM":true , "US-NY":true , "US-NC":true , "US-ND":true , "US-OH":true , "US-OK":true , "US-OR":true , "US-PA":true , "US-RI":true , "US-SC":true , "US-SD":true , "US-TN":true , "US-TX":true , "US-UT":true , "US-VT":true , "US-VA":true , "US-WA":true , "US-WV":true , "US-WI":true , "US-WY":true }
+      sort filteredData['year'] in chronological order
+      sort filteredData['size'] in alphabetical order
+      e.g filteredData['size'] = {'large':true,'medium':true,'small':true}
+      sort filteredData['carrier'] in alphabetical order according to carrierDict
+    */
+
+    let sortedFilteredData:any = {
+      "state": {},
+      "year": {},
+      "size": {},
+      "carrier": {},
+      "direction": {"departures": true, "arrival": false},
+    };
+
+    Object.keys(filteredData).forEach((key) => {
+      if(key==='state'){
+        Object.keys(filteredData[key]).sort().forEach((state) => {
+          sortedFilteredData[key][state] = filteredData[key][state];
+        });
+      }
+      else if(key==='year'){
+        Object.keys(filteredData[key]).sort().forEach((year) => {
+          sortedFilteredData[key][year] = filteredData[key][year];
+        });
+      }
+      else if(key==='size'){
+        Object.keys(filteredData[key]).sort().forEach((size) => {
+          sortedFilteredData[key][size] = filteredData[key][size];
+        });
+      }
+
+      else if(key==='carrier'){
+        Object.keys(filteredData[key]).sort().forEach((carrier) => {
+          sortedFilteredData[key][carrier] = filteredData[key][carrier];
+        });
+      }
+
+      else if(key==='direction'){
+        Object.keys(filteredData[key]).sort().forEach((direction) => {
+          sortedFilteredData[key][direction] = filteredData[key][direction];
+        });
+      }
+
+    });
+    console.log('filtered data in map component',sortedFilteredData);
+    setGlobalFilter(sortedFilteredData);
     setRegionDelayData(newTree);
   }
 
@@ -855,6 +923,11 @@ function MapComponent() {
       });
   }, []);
 
+  useEffect(() => {
+    console.log('level 0 graph data',LevelZeroGraphData)
+    dispatch(flight_actions.set_flight_chart_data1(LevelZeroGraphData));
+  }, [LevelZeroGraphData]);
+
 
   useEffect(() => {
     calculateStateLevelDelay();
@@ -894,7 +967,7 @@ function MapComponent() {
   //Redux update graph1 data
   useEffect(() => {
     console.log("Graph1Dic : ",Graph1Dic)
-    dispatch(flight_actions.set_flight_chart_data1(Graph1Dic))
+    //dispatch(flight_actions.set_flight_chart_data1(Graph1Dic))
   }, [Graph1Dic]);
 
   //Render
@@ -995,7 +1068,7 @@ function MapComponent() {
                 <VerticalBarChart/>
               </div>
               <div id="graph__container_2">
-                <PieChart data={pie_data}/>
+                <PieChart />
                </div>
             </>
           )}
