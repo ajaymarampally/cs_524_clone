@@ -229,7 +229,6 @@ function MapComponent() {
         map.current?.removeLayer(layer);
       }
     });
-    console.log('state','value',value,state)
     const url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
     // fetch the states geojson
     fetch(url)
@@ -510,7 +509,6 @@ function MapComponent() {
     //   }
     // });
     data.forEach((d) => {
-      console.log('drawing circle for', d.airport_name, d.longitude, d.latitude);
       const center = [d.longitude, d.latitude];
       const radius = (d.delay - colorScaleMinMaxStore[0]) / (colorScaleMinMaxStore[1] - colorScaleMinMaxStore[0]) * 0.2;
       const color = [255, 0, 0, 0.25];
@@ -534,7 +532,6 @@ function MapComponent() {
         const layerId = e.target?.get('id');
         if (e.target instanceof VectorLayer && layerId?.startsWith('airport_')) {
           const features = e.target.getSource().getFeatures();
-          console.log('features of the selected circle', features);
           features.forEach((feature: any) => {
             feature.on('click', (evt: any) => {
               const data = feature.getProperties();
@@ -672,7 +669,6 @@ function MapComponent() {
 
   //useEffect consolidated data
   useEffect(() => {
-    console.log('consolidatedChartData',consolidatedChartData)
     dispatch(flight_actions.set_flight_chart_data1(consolidatedChartData))
   },[consolidatedChartData]
   );

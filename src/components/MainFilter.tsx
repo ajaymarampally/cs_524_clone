@@ -19,9 +19,6 @@ function MainFilter() {
     //redux hooks
     const dispatch = useDispatch();
     const FiltersStore = useSelector((state: RootState) => state.flight.selectedFilters);
-    const regionalDataStore = useSelector((state: RootState) => state.flight.regionDelayData);
-
-    console.log('FiltersStore in main filter',FiltersStore);
 
 
   const carrierDict: { [key: string]: string } = {
@@ -37,26 +34,27 @@ function MainFilter() {
     MQ: "American Eagle Airlines",
   };
 
-  const YearDict: { [key: string]: string } = {
-    "2001-01": "January",
-    "2001-02": "February",
-    "2001-03": "March",
-    "2001-04": "April",
-    "2001-05": "May",
-    "2001-06": "June",
-    "2001-07": "July",
-    "2001-08": "August",
-    "2001-09": "September",
-    "2001-10": "October",
-    "2001-11": "November",
-    "2001-12": "December",
+  const yearDict: { [key: string]: string } = {
+    "2002-01": "January",
+    "2002-02": "February",
+    "2002-03": "March",
+    "2002-04": "April",
+    "2002-05": "May",
+    "2002-06": "June",
+    "2002-07": "July",
+    "2002-08": "August",
+    "2002-09": "September",
+    "2002-10": "October",
+    "2002-11": "November",
+    "2002-12": "December",
   };
 
   const [isStateOpen, setIsStateOpen] = React.useState<boolean>(false);
   const [isYearOpen, setIsYearOpen] = React.useState<boolean>(false);
   const [isSizeOpen, setIsSizeOpen] = React.useState<boolean>(false);
   const [isCarrierOpen, setIsCarrierOpen] = React.useState<boolean>(false);
-  const [filtersState, setFiltersState] = React.useState<any>();
+  const [filtersState, setFiltersState] = React.useState<any>(null);
+  const [filterFlag, setFilterFlag] = React.useState<boolean>(false);
   //functions
   const onChange = (e: CheckboxChangeEvent) => {
     const id = e.target.id;
@@ -117,6 +115,69 @@ function MainFilter() {
     dispatch(flight_actions.set_flight_filters(filtersState));
   };
 
+  const sortFilters = (data: any) => {
+    /*
+        set filtersState['state'] in alphabetical order according to stateMap
+        e.g filtersState['state'] = { 'US-AL': true, 'US-AK': true, ...}
+        set filtersState['year'] in chronological order
+        e.g filtersState['year'] = { '2001-01': true, '2001-02': true, ...}
+        set filtersState['size'] in alphabetical order
+        e.g filtersState['size'] = { 'large': true, 'medium': true, 'small': true}
+        set filtersState['carrier'] in alphabetical order according to carrierDict
+        e.g filtersState['carrier'] = { 'AA': true, 'AS': true, ...}
+    */
+    console.log('sort filters',data)
+    setFilterFlag(true);
+    //sort state
+    let stateDict: { [key: string]: boolean } = {};
+    Object.keys(data['state']).sort().forEach((key: string) => {
+        stateDict[key] = data['state'][key];
+    }
+    );
+    console.log('stateDict',stateDict);
+    setFiltersState((prevState:any) => ({
+        ...prevState,
+        state: stateDict,
+    }));
+
+
+    //sort year
+    let yearDict: { [key: string]: boolean } = {};
+    Object.keys(data['year']).sort().forEach((key: string) => {
+        yearDict[key] = data['year'][key];
+    }
+    );
+    setFiltersState((prevState:any) => ({
+        ...prevState,
+        year: yearDict,
+    }));
+
+
+    //sort size
+    let sizeDict: { [key: string]: boolean } = {};
+    Object.keys(data['size']).sort().forEach((key: string) => {
+        sizeDict[key] = data['size'][key];
+    }
+    );
+    setFiltersState((prevState:any) => ({
+        ...prevState,
+        size: sizeDict,
+    }));
+
+    //sort carrier
+    let carrierDict: { [key: string]: boolean } = {};
+    Object.keys(data['carrier']).sort().forEach((key: string) => {
+        carrierDict[key] = data['carrier'][key];
+    }
+    );
+
+    setFiltersState((prevState:any) => ({
+        ...prevState,
+        carrier: carrierDict,
+    }));
+
+};
+
 
   //useEffect
     // React.useEffect(() => {
@@ -125,16 +186,22 @@ function MainFilter() {
     // }, [selectedFilters]);
 
     React.useEffect(() => {
-        console.log('filters_state',filtersState);
+        console.log('filters_state ue',filtersState);
+        if(filtersState && !filterFlag && Object.keys(filtersState['state']).length > 0){
+            sortFilters(filtersState);
+        }
+        //console.log('sending dispatch')
         //dispatch(flight_actions.set_flight_filters(filtersState));
+
     },[filtersState]);
-
-
 
     React.useEffect(() => {
         console.log('filters_store',FiltersStore);
         setFiltersState(FiltersStore);
     }, [FiltersStore]);
+
+
+
   return (
     <>
       <div className="row">
@@ -157,7 +224,7 @@ function MainFilter() {
                             >{stateMap[key]}</Checkbox>
                         </li>
                     ))}
-                </ul>                
+                </ul>
                 )
             }
         </div>
@@ -168,21 +235,21 @@ function MainFilter() {
                 id="dropdownMenuButton1"
                 onClick={toggleYearOpen}
             >
-                Year
+                Month
             </button>
             {
                 filtersState && (
                     <ul className={`dropdown-menu ${isYearOpen ? "show" : ""}`} aria-labelledby="dropdownMenuButton1" style={{ maxHeight: "300px", overflowY: "scroll" }}>
                     {Object.keys(filtersState['year']).map((key, index) => (
                         <li key={key}>
-                            <Checkbox checked={filtersState['year'][key]} id="year" value={key} onChange={onChange}>{key}</Checkbox>
+                            <Checkbox checked={filtersState['year'][key]} id="year" value={key} onChange={onChange}>{yearDict[key]}</Checkbox>
                         </li>
                     ))}
-                </ul>    
+                </ul>
                 )
             }
         </div>
-        <div className="col-2">
+        {/* <div className="col-2">
             <button
                 className="btn btn-outline-light dropdown-toggle"
                 type="button"
@@ -199,10 +266,10 @@ function MainFilter() {
                             <Checkbox checked={filtersState['size'][key]} id="size" value={key} onChange={onChange}>{key}</Checkbox>
                         </li>
                     ))}
-                    </ul>    
+                    </ul>
                 )
             }
-        </div>
+        </div> */}
         <div className="col-2">
             <button
                 className="btn btn-outline-light dropdown-toggle"
@@ -220,7 +287,7 @@ function MainFilter() {
                             <Checkbox checked={filtersState['carrier'][key]} id="carrier" value={key} onChange={onChange}>{key}</Checkbox>
                         </li>
                     ))}
-                    </ul>    
+                    </ul>
                 )
             }
         </div>

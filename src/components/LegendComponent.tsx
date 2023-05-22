@@ -11,17 +11,14 @@ function LegendComponent() {
   const legendStore = useSelector((state: RootState) => state.flight.selectedLegend);
   const legendMinMax = useSelector((state: RootState) => state.flight.LegendMinMax);
   const legendColorScale = useSelector((state: RootState) => state.flight.colorScale);
-  console.log('legendMinMax ',legendMinMax)
-    console.log('legendColorScale ',legendColorScale)
   //ARRIVAL --> colorScale = rgba(0, 0, 255, 0.5), rgba(173, 216, 230, 0.5);
   //DEPARTURE --> colorScale = rgba(139, 0, 0, 0.5), rgba(255, 192, 203, 0.5);
- 
+
   const drawLegend = (legendTitle:string) => {
     //clear the container
     d3.select("#legend__populate").selectAll("*").remove();
 
     let LlegendMinMax = legendMinMax;
-    console.log('colorScale ',legendColorScale)
 
     const legendSvg = d3.select("#legend__populate")
     .append("svg")
@@ -68,7 +65,6 @@ function LegendComponent() {
 }
 
     React.useEffect(() => {
-        console.log('legendColorScale ',legendColorScale)
         if(legendColorScale!=null)
         {
             drawLegend(legendStore);
