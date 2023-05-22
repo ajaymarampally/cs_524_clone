@@ -249,7 +249,8 @@ function MapComponent() {
         map.current?.removeLayer(layer);
       }
     });
-    console.log('state','value',value,state)
+
+
     const url = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
     // fetch the states geojson
     fetch(url)
@@ -342,47 +343,6 @@ function MapComponent() {
     setAirportCode(airport.iata_code);
     return [airport.longitude, airport.latitude]
   };
-
-  //function to make chartData
-  const buildChartData1 = (state:string,year:string,carrier:string,size:string,delay:number) =>{
-    if(!chartData1.hasOwnProperty(size) || !chartData1[size].hasOwnProperty(year)) {
-      setChartData1((prevState:any) => {
-        return {
-          ...prevState,
-          [size]: {
-            ...prevState[size],
-            [year]: [0, 0]
-          }
-        }
-      });
-    }
-
-    //chartData1[size][year][0] += delay;
-    //chartData1[size][year][1] += 1;
-
-    setChartData1((prevState:any) => {
-      const prevSize = prevState.hasOwnProperty(size) ? prevState[size] : {};
-      return {
-        ...prevState,
-        [size]: {
-          ...prevSize,
-          [year]: [prevSize.hasOwnProperty(year) ? prevSize[year][0] + delay : delay, prevSize.hasOwnProperty(year) ? prevSize[year][1] + 1 : 1]
-        }
-      }
-    });
-  }
-
-  const consolidateChartData = (chartData:any) =>{
-    let newChartData:any = {};
-    Object.keys(chartData).forEach((size) => {
-      newChartData[size] = {};
-      Object.keys(chartData[size]).forEach((year) => {
-        newChartData[size][year] = chartData[size][year][0]/chartData[size][year][1];
-      });
-    });
-    return newChartData;
-
-  }
 
   const showTooltip = (data: any) => {
     // Get reference to the tooltip container element
@@ -601,9 +561,9 @@ function MapComponent() {
               if(selectedFiltersStore['carrier'][carrier]){
                 for(let size in regionDelayData[key][year][carrier]){
                   if(regionDelayData[key][year][carrier][size]['arr_delay'] != null){
-                    //parse the value to float and add it to value with modulus to make it positive
-                    valueArr += Math.abs(parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']));
-                    valueDep += Math.abs(parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']));
+                    //parse the value to float and add it to value
+                    valueArr += parseFloat(regionDelayData[key][year][carrier][size]['arr_delay']);
+                    valueDep += parseFloat(regionDelayData[key][year][carrier][size]['dep_delay']);
                     //increment cnt
                     cnt += 1;
                     
@@ -846,7 +806,6 @@ function MapComponent() {
         try {
           console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
           setLastClick(event.mapBrowserEvent.pixel);
-
           if (SelectedState !== event.selected[0].get('name')) {
             if (event.selected.length > 0) {
               setSelectedState(event.selected[0].get('name'));
@@ -993,7 +952,6 @@ function MapComponent() {
     }
   }
   
-
   return (
     <>
       <div style={{ position: "relative" }}>
