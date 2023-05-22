@@ -147,7 +147,7 @@ function MainFilter() {
                         <li key={key}>
                             <Checkbox id="state" value={key} onChange={onChange}
                             checked = {filtersState['state'][key]}
-                            >{stateMap[key]}</Checkbox>
+                            >{stateMap[key] ? stateMap[key] : ""}</Checkbox>
                         </li>
                     ))}
                 </ul>
