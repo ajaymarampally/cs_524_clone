@@ -46,6 +46,7 @@ import BarChart from "./graphs/BarChart";
 import { GroupedBarChart } from "./graphs/GroupedBarChart";
 import { VerticalBarChart } from "./graphs/VerticalBarChart";
 import { none } from "ol/centerconstraint";
+import { white } from "material-ui/styles/colors";
 
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
@@ -591,7 +592,7 @@ function MapComponent() {
       if (map.current) {
         map.current.addLayer(vectorLayer);
         tempAirportLayerList.push(vectorLayer);
-        map.current.getView().fit(circle.getExtent(), { padding: [20, 20, 20, 20], duration: 1000 });
+        //map.current.getView().fit(circle.getExtent(), { padding: [20, 20, 20, 20], duration: 1000 });
       }
     }
     });
@@ -1109,13 +1110,32 @@ function MapComponent() {
           {showGraphs && (
             <>
               <div id="graph__container">
-                {/* <StackedBarChart/> */}
-                {/* <BarChartBorderRadius/> */}
-                {/* <BarChart/> */}
-                {/* {<GroupedBarChart/>} */}
+                <div className="row justify-content-center">
+                  <label
+                    style={
+                      {
+                        color:"white",
+                        textAlign:"center"
+                      }
+                    }
+                  >Month Vs Delay</label>
+
+`                </div>
+
                 <VerticalBarChart/>
               </div>
               <div id="graph__container_2">
+                <div className="row justify-content-center">
+                  <label
+                    style={
+                      {
+                        color:"white",
+                        textAlign:"center"
+                      }
+                    }
+                  >Carrier Vs Delay</label>
+
+`                </div>
                 <PieChart />
                </div>
             </>
