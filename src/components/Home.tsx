@@ -20,7 +20,7 @@ const dispatch = useDispatch();
                 <MapComponent />
             </div>
             <div id='no__display__container'>
-                please display in desktop mode
+                smaller display is not supported
             </div>
         </div>
     </>
