@@ -63,7 +63,7 @@ export default function MyResponsivePie() {
                     pie_data.push({
                         id:airline,
                         label:airline,
-                        value:selectedToggle==='arrival'? parseFloat((data[airline]['arrVal']/data[airline]['cnt']).toFixed(2)) : parseFloat((data[airline]['depVal']/data[airline]['cnt']).toFixed(2)),
+                        value:selectedToggle==='arrival'? Math.abs(parseFloat((data[airline]['arrVal']/data[airline]['cnt']).toFixed(2))) : Math.abs(parseFloat((data[airline]['depVal']/data[airline]['cnt']).toFixed(2))),
                         color:colorMap[airline]
                     })
                 }
@@ -205,14 +205,14 @@ export default function MyResponsivePie() {
                 direction: 'column',
                 justify: false,
                 translateX: 50,
-                translateY: 10,
+                translateY: 0,
                 itemsSpacing: 22,
                 itemWidth: 100,
-                itemHeight: 18,
+                itemHeight: 10,
                 itemTextColor: '#999',
                 itemDirection: 'top-to-bottom',
                 itemOpacity: 1,
-                symbolSize: 18,
+                symbolSize: 10,
                 symbolShape: 'circle',
                 effects: [
                     {
