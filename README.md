@@ -8,7 +8,7 @@ npm install --legacy-peer-deps
 To install dependencies for the proxy server 
 
 ```
-cd netlify
+cd netlify/functions/proxy
 ```
 ```
 sudo npm install netlify-cli -g --legacy-peer-deps
