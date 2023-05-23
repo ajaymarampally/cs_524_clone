@@ -1,13 +1,24 @@
 # Flight Analytics
 
-To install dependencies 
+To install dependencies for the application
 
 ```
 npm install --legacy-peer-deps
 ```
-To start the application 
+To install dependencies for the proxy server 
 
 ```
-npm start --port <port number>
+cd netlify
+```
+```
+sudo npm install netlify-cli -g --legacy-peer-deps
+```
+```
+npm install --legacy-peer-deps
 ```
 
+To start netlify server locally
+
+```
+netlify dev
+```
