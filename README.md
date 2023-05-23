@@ -20,5 +20,5 @@ npm install --legacy-peer-deps
 To start netlify server locally
 
 ```
-netlify dev
+sudo netlify dev
 ```
