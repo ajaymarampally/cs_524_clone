@@ -5,7 +5,7 @@ import Home from './components/Home';
 
 function App() {
   return (
-    <div className="container-fluid">
+    <div>
       {/* <div className="Header">
         High Altitude Analytics
       </div> */}

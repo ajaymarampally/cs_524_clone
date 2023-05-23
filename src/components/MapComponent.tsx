@@ -303,7 +303,7 @@ function MapComponent() {
     // Pad the hex code with zeros if necessary
     return "#" + hex.padStart(6, "0");
   }
-  
+
   const drawStateColor = (state: string , value : string) => {
     // url for usa states geojson
     //console.log('state',state,'value',value)
@@ -831,7 +831,6 @@ function MapComponent() {
       const tile = new TileLayer({
         source: new OSM()
       });
-
       tile.on('prerender',(evt)=>{
         if (evt.context) {
           const context = evt.context as CanvasRenderingContext2D;
