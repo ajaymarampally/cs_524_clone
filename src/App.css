@@ -285,9 +285,9 @@
 
 #graph__container {
   position: absolute;
-  top: 80px;
-  width: 650px;
-  height: 430px;
+  top: 5vh;
+  width: 40vw;
+  height: 40vh;
   background-color: #333333;
   display: block;
   margin: 10px;
@@ -299,9 +299,9 @@
 
 #graph__container_2 {
   position: absolute;
-  top: 520px;
-  width: 650px;
-  height: 430px;
+  top: 50vh;
+  width: 40vw;
+  height: 40vh;
   background-color: #333333;
   display: block;
   margin: 10px;
@@ -360,3 +360,25 @@
   margin: 0 10px 0 10px;
 }
 
+@media only screen and (max-width: 767px) {
+  #no__display__container {
+    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+  }
+  .map__container {
+    display: none;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  #no__display__container {
+    display: none;
+  }
+  .map__container {
+    display: block;
+  }
+}
