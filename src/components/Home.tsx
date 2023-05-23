@@ -19,6 +19,9 @@ const dispatch = useDispatch();
             <div className='map__container'>
                 <MapComponent />
             </div>
+            <div id='no__display__container'>
+                please display in desktop mode
+            </div>
         </div>
     </>
   )
