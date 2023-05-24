@@ -58,7 +58,6 @@ function MainFilter() {
   const onChange = (e: CheckboxChangeEvent) => {
     const id = e.target.id;
     const value = e.target.value;
-    console.log(id, value);
     switch (id) {
         case "state":
             //set filtersState['state'][value] = !filtersState['state'][value];
@@ -116,14 +115,14 @@ function MainFilter() {
 
 
     React.useEffect(() => {
-        console.log('filters_state',filtersState);
+        //console.log('filters_state',filtersState);
         //dispatch(flight_actions.set_flight_filters(filtersState));
     },[filtersState]);
 
 
 
     React.useEffect(() => {
-        console.log('filters_store',FiltersStore);
+        //console.log('filters_store',FiltersStore);
         setFiltersState(FiltersStore);
     }, [FiltersStore]);
 

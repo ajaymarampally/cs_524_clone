@@ -207,7 +207,6 @@ const generateData = (data: any) => {
 
 
 useEffect(() => {
-  console.log('chart data store in bar chart', chartDataStore, Object.keys(chartDataStore).length);
 
   if (Object.keys(chartDataStore).length > 0) {
     let chartData: { [key: string]: { yearMonth: string; [key: string]: number | string }[] } = {
@@ -216,7 +215,6 @@ useEffect(() => {
     };
 
     Object.keys(chartDataStore).map((month) => {
-      console.log('month', month);
       chartData['arrival'].push({ yearMonth: month });
       chartData['departure'].push({ yearMonth: month });
 
@@ -226,7 +224,6 @@ useEffect(() => {
       });
     });
 
-    console.log('after parse chartdata', chartData);
     setgraphData(chartData);
   }
 }, [chartDataStore]);
@@ -235,7 +232,7 @@ useEffect(() => {
 
 
  useEffect(()=>{
-  console.log('selected toggle in bar chart',selectedToggle)
+
   if(Object.keys(chartDataStore).length > 0 && selectedToggle==='arrival'){
     setActiveData(graphData['arrival'])
   }
@@ -245,7 +242,7 @@ useEffect(() => {
  },[selectedToggle,graphData])
 
  useEffect(()=>{
-  console.log('active data',activeData)
+  //console.log('active data',activeData)
  },[activeData])
 
   return (

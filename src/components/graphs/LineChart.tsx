@@ -42,7 +42,6 @@ const LineChart = (props: AirportCode) => {
     try {
       let axios_url = '';
       mode === 'arrival' ? axios_url = '/.netlify/functions/proxy?iata_arrival=' + code : axios_url = '/.netlify/functions/proxy?iata_departure=' + code;
-      console.log('axios_url', axios_url);
       const response = await axios.get(axios_url);
 
       if (response && response.data.length > 0) {

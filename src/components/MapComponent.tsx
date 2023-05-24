@@ -167,7 +167,7 @@ function MapComponent() {
   }, [globalFilter]);
 
   useEffect(() => {
-    console.log("dafuq")
+    //console.log("dafuq")
   }, [showGraphs]);
 
   const handleFilterClick = () =>{
@@ -293,7 +293,7 @@ function MapComponent() {
       }
 
     });
-    console.log('filtered data in map component',sortedFilteredData);
+    //console.log('filtered data in map component',sortedFilteredData);
     setGlobalFilter(sortedFilteredData);
     setRegionDelayData(newTree);
   }
@@ -433,7 +433,7 @@ function MapComponent() {
       let airlineDelay: any = {};
 
       const tooltipdata = (regionDelayData[stateMap[SelectedState]])
-      console.log('tooltipdata',tooltipdata);
+      //console.log('tooltipdata',tooltipdata);
 
 
 
@@ -481,7 +481,7 @@ function MapComponent() {
         airlineDelayRounded[carrier] = Math.round(value/cnt * 100)/100;
       });
 
-      console.log('airlineDelay',airlineDelayRounded);
+      //'airlineDelay',airlineDelayRounded);
       // Add content to the tooltip container
 
 
@@ -543,7 +543,7 @@ function MapComponent() {
   const drawCircles = (data: any[]) => {
 
     airportLayerList.forEach((layer)=>{
-       console.log("removing circle layer")
+       //console.log("removing circle layer")
        map.current?.removeLayer(layer);
     })
 
@@ -553,7 +553,7 @@ function MapComponent() {
 
     let tempAirportLayerList:any = []
     data.forEach((d) => {
-      console.log('drawing circle for', d.airport_name, d.longitude, d.latitude);
+      //console.log('drawing circle for', d.airport_name, d.longitude, d.latitude);
       if (selectedToggle.startsWith(d.direction))
       {
       const center = [d.longitude, d.latitude];
@@ -579,7 +579,7 @@ function MapComponent() {
         const layerId = e.target?.get('id');
         if (e.target instanceof VectorLayer && layerId?.startsWith('airport_')) {
           const features = e.target.getSource().getFeatures();
-          console.log('features of the selected circle', features);
+          //console.log('features of the selected circle', features);
           features.forEach((feature: any) => {
             feature.on('click', (evt: any) => {
               const data = feature.getProperties();
@@ -896,7 +896,7 @@ function MapComponent() {
 
       select.on('select', (event: { mapBrowserEvent: MapBrowserEvent<UIEvent>, selected: string | any[]}) => {
         try {
-          console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
+          //console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
           setLastClick(event.mapBrowserEvent.pixel);
           /*
             sfs --> sfs[selected_state] === false
@@ -905,7 +905,7 @@ function MapComponent() {
 
           if (SelectedState !== event.selected[0].get('name') ) {
             if (event.selected.length > 0 && selectedFiltersStore['state'][stateMap[event.selected[0].get('name')]] !==false ) {
-              console.log('florida should not be selected',selectedFiltersStore['state'][stateMap[event.selected[0].get('name')]],[stateMap[event.selected[0].get('name')]],selectedFiltersStore['state'])
+              //console.log('florida should not be selected',selectedFiltersStore['state'][stateMap[event.selected[0].get('name')]],[stateMap[event.selected[0].get('name')]],selectedFiltersStore['state'])
 
               setSelectedState(event.selected[0].get('name'));
               setIsStateSelected(true);
@@ -999,7 +999,7 @@ function MapComponent() {
         });
       }
       catch(err){
-        console.log(err);
+        //console.log(err);
       }
     }
   }, []);
@@ -1018,7 +1018,7 @@ function MapComponent() {
 
   //Redux update graph1 data
   useEffect(() => {
-    console.log("Graph1Dic : ",Graph1Dic)
+    //console.log("Graph1Dic : ",Graph1Dic)
     //dispatch(flight_actions.set_flight_chart_data1(Graph1Dic))
   }, [Graph1Dic]);
 
@@ -1030,13 +1030,13 @@ function MapComponent() {
   }, [triggerRender]);
 
   useEffect(() => {
-    console.log("data circle ",circleData)
+    //console.log("data circle ",circleData)
     dispatch(flight_actions.set_flight_circle_data(circleData));
 
   }, [circleData]);
 
   useEffect(() => {
-    console.log("selectedFiltersStore", selectedFiltersStore);
+    //console.log("selectedFiltersStore", selectedFiltersStore);
     calculateStateLevelDelay();
     setDistplayTooltip(false)
   }, [selectedFiltersStore]);
@@ -1070,7 +1070,7 @@ function MapComponent() {
   }, [SelectedState]);
 
   function fireClickEvent(pixelX: number, pixelY: number): void {
-    console.log("firing pixel ",pixelX,pixelY,lastClick)
+    //console.log("firing pixel ",pixelX,pixelY,lastClick)
     if (pixelX != null && pixelX !=undefined && pixelY != null && pixelY !=undefined)
     {
       const event = new MouseEvent('click', {
@@ -1081,7 +1081,7 @@ function MapComponent() {
       });
 
       document.elementFromPoint(pixelX, pixelY)?.dispatchEvent(event);
-      console.log("firing pixel ",pixelX,pixelY)
+      //console.log("firing pixel ",pixelX,pixelY)
     }
   }
 

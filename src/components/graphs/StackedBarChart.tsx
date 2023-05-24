@@ -8,24 +8,22 @@ const StackedBarChart = () => {
   const [chartData, setChartData] = useState<any>({});
   const [chartLabels, setChartLabels] = useState<any>([]);
   const [chartDatasets, setChartDatasets] = useState<any>([]);
-  //get chart data from redux 
+  //get chart data from redux
 
   const chartDataStore = useSelector((state: any) => state.flight.chartData1);
 
   useEffect(() => {
-    console.log('Yash : ',chartDataStore);
     setChartData(chartDataStore);
     let labels = sortData(chartDataStore);
     setChartLabels(labels);
   }, [chartDataStore]);
 
   useEffect(() => {
-    console.log('chartData', chartData);
+    //console.log('chartData', chartData);
   }, [chartData]);
 
 
   useEffect(() => {
-    console.log('chartLabels', chartLabels);
     const data = (getDataSetChart(chartData, chartLabels));
     setChartDatasets(data);
     //destroy chart instance
@@ -39,11 +37,11 @@ const StackedBarChart = () => {
   const sortData = (data: any) => {
     let labelSet = new Set();
     Object.keys(data).forEach((size: string) => {
-      Object.keys(data[size]).forEach((year: string) => { 
+      Object.keys(data[size]).forEach((year: string) => {
         labelSet.add(year);
       });
     });
-    let labelList = Array.from(labelSet).sort();  
+    let labelList = Array.from(labelSet).sort();
     return labelList;
   }
 
@@ -80,7 +78,6 @@ const StackedBarChart = () => {
     const labelList = sortData(chartDataStore);
     //set chartData as getDataSetChart(chartData, labelList)
     const data = (getDataSetChart(chartData, labelList));
-    console.log('data', data);
 
     if (chartRef.current) {
       if (chartInstanceRef.current) {
@@ -122,7 +119,7 @@ const StackedBarChart = () => {
       }
     }
   }, []);
-  
+
 
   return (
     <>
@@ -132,7 +129,7 @@ const StackedBarChart = () => {
     </>
   )
 
- 
+
 };
 
 export default StackedBarChart;

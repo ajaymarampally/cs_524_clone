@@ -59,10 +59,10 @@ export function VerticalBarChart() {
  const chartDataStore = useSelector((state: any) => state.flight.chartData1);
  const selectedToggle = useSelector((state: any) => state.flight.selectedToggle);
 
- console.log('chart data store in bar chart',chartDataStore)
+
 //functions
 const handleGraphData = (data:any) => {
-  console.log('data in handle graph data',data)
+
   //set labels as Object.keys(data) and parse to string according to yearDict as yearDict[year] and sort in ascending order
   // let yearDict: { [key: string]: boolean } = {};
   // Object.keys(data['year']).sort().forEach((key: string) => {

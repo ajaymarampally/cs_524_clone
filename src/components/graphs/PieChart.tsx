@@ -76,9 +76,7 @@ export default function MyResponsivePie() {
 
      //useEffect hooks
  useEffect(()=>{
-    console.log('selected toggle in bar chart',selectedToggle)
       let data = handleGraphData(chartDataStore['graph2'])
-      console.log('pie chart data',data)
       setActiveData(data)
    },[selectedToggle, graphData, chartDataStore])
 

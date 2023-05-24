@@ -11,13 +11,12 @@ function FilterComponent() {
   const handleFilterClick = () => {
     setShowFilter(!showFilter);
   };
-  
+
   const handleFilterOptionClick = (value:any) => {
-    console.log('filter_value ',value);
     //send as a prop to the FilterProps component\
     setPropContent(value);
     //pass to the parent component
-    
+
   };
 
 
