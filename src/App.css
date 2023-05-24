@@ -387,3 +387,17 @@
     display: block;
   }
 }
+
+@media only screen and (max-height: 900px) {
+  #no__display__container {
+    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+  }
+  .map__container {
+    display: none;
+  }
+}

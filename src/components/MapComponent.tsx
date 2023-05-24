@@ -166,10 +166,6 @@ function MapComponent() {
     dispatch(flight_actions.set_flight_filters(globalFilter));
   }, [globalFilter]);
 
-  useEffect(() => {
-    //console.log("dafuq")
-  }, [showGraphs]);
-
   const handleFilterClick = () =>{
     setShowGraphs(!showGraphs);
   }
@@ -933,7 +929,6 @@ function MapComponent() {
       // set false after map is loaded
       map.current.on("rendercomplete", () => {
         setIsLoading(false);
-        setShowGraphs(true);
       });
     }
     return () => {
@@ -1068,6 +1063,15 @@ function MapComponent() {
 
 
   }, [SelectedState]);
+
+  useEffect(() => {
+    setShowGraphs(true);
+  }, []);
+
+
+  useEffect(() => {
+    console.log('showGraphs ue',showGraphs)
+  }, [showGraphs]);
 
   function fireClickEvent(pixelX: number, pixelY: number): void {
     //console.log("firing pixel ",pixelX,pixelY,lastClick)

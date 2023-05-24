@@ -58,7 +58,8 @@ export default function MyResponsivePie() {
                     color: set color according to colorMap
                 }
             */
-              let pie_data: { id: string; label: string; value: number; color: any; }[] = []
+              if(data){
+                let pie_data: { id: string; label: string; value: number; color: any; }[] = []
                 Object.keys(data).map((airline:string)=>{
                     pie_data.push({
                         id:airline,
@@ -69,6 +70,7 @@ export default function MyResponsivePie() {
                 }
                 )
                 return pie_data;
+              }
 
 
         }

@@ -69,25 +69,27 @@ const handleGraphData = (data:any) => {
   //     yearDict[key] = data['year'][key];
   // }
   // );
-  let labels = Object.keys(data).sort().map((key:string)=>yearDict[key]);
-  let datasets:any = [];
-  let color = selectedToggle==='arrival'? 'rgba(11,40,56,0.8)' : 'rgba(255, 155, 66, 0.8)';
-  let borderColor = selectedToggle==='arrival'? 'rgba(173, 216, 230, 0.5)' : 'rgba(255, 192, 203, 0.5)';
-  let borderWidth = 1;
-  let dataset = {
-    label: selectedToggle.toUpperCase() + ' DELAY IN SECONDS',
-    //for each key ,console.log(key) set data as data['arrVal']/data['cnt'] if selectedToggle is arrival else data['depVal']/data['cnt'] parse to float and round to 2 decimal places
-    data:Object.keys(data).map((key:string)=>selectedToggle==='arrival'? parseFloat((data[key]['arrVal']/data[key]['cnt']).toFixed(2)) : parseFloat((data[key]['depVal']/data[key]['cnt']).toFixed(2))),
-    backgroundColor: color,
-    borderColor: borderColor,
-    borderWidth: borderWidth
+  if(data){
+    let labels = Object.keys(data).sort().map((key:string)=>yearDict[key]);
+    let datasets:any = [];
+    let color = selectedToggle==='arrival'? 'rgba(11,40,56,0.8)' : 'rgba(255, 155, 66, 0.8)';
+    let borderColor = selectedToggle==='arrival'? 'rgba(173, 216, 230, 0.5)' : 'rgba(255, 192, 203, 0.5)';
+    let borderWidth = 1;
+    let dataset = {
+      label: selectedToggle.toUpperCase() + ' DELAY IN SECONDS',
+      //for each key ,console.log(key) set data as data['arrVal']/data['cnt'] if selectedToggle is arrival else data['depVal']/data['cnt'] parse to float and round to 2 decimal places
+      data:Object.keys(data).map((key:string)=>selectedToggle==='arrival'? parseFloat((data[key]['arrVal']/data[key]['cnt']).toFixed(2)) : parseFloat((data[key]['depVal']/data[key]['cnt']).toFixed(2))),
+      backgroundColor: color,
+      borderColor: borderColor,
+      borderWidth: borderWidth
+    }
+    datasets.push(dataset);
+    let graphData = {
+      labels:labels,
+      datasets:datasets
+    }
+    return graphData;
   }
-  datasets.push(dataset);
-  let graphData = {
-    labels:labels,
-    datasets:datasets
-  }
-  return graphData;
 }
 
  //useEffect hooks
