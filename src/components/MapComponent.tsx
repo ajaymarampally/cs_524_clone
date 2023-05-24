@@ -47,7 +47,9 @@ import { GroupedBarChart } from "./graphs/GroupedBarChart";
 import { VerticalBarChart } from "./graphs/VerticalBarChart";
 import { none } from "ol/centerconstraint";
 import { white } from "material-ui/styles/colors";
-import TooltipComponent from "./TooltipComponent"
+
+
+
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
 const useStyles = makeStyles(() => ({
@@ -98,11 +100,6 @@ function MapComponent() {
     "graph1":{},//month VS delay
     "graph2":{} //carrier VS delay
   })
-
-
-
-
-
   //colorscaleProps of type d3.scaleSequential(d3.interpolateRgb("rgba(139, 0, 0, 0.5)", "rgba(255, 192, 203, 0.5)")).domain([min, max])
 
   const [colorScaleProps, setColorScaleProps] = useState<any>(null);
@@ -175,8 +172,6 @@ function MapComponent() {
   const handleFilterClick = () =>{
     setShowGraphs(!showGraphs);
   }
-
-
 
   //functions
   async function parseData(newJsonData:any, regionDelayTree:any) {
@@ -734,14 +729,14 @@ function MapComponent() {
       SelectedState = null
     }
   }
-    
-    */ 
+
+    */
   if(SelectedState!=null){
     Object.keys(selectedFiltersStore['state']).forEach((state:any)=>{
       if(stateMap[SelectedState] === state&& selectedFiltersStore['state'][state] === false){
         setSelectedState(null)
       }
-    })  
+    })
   }
 
 
@@ -840,7 +835,6 @@ function MapComponent() {
       const tile = new TileLayer({
         source: new OSM()
       });
-
       tile.on('prerender',(evt)=>{
         if (evt.context) {
           const context = evt.context as CanvasRenderingContext2D;
@@ -856,8 +850,9 @@ function MapComponent() {
         }
       });
 
+
       const statesSource = new VectorSource({
-        url: 'https://raw.githubusercontent.com/openlayers/openlayers/main/examples/data/geojson/us-states.geojson',
+        url: 'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json',
         format: new GeoJSON(),
       });
 
@@ -903,14 +898,14 @@ function MapComponent() {
           console.log('state select event : ', event.mapBrowserEvent.pixel, "features",select.getFeatures());
           setLastClick(event.mapBrowserEvent.pixel);
           /*
-            sfs --> sfs[selected_state] === false 
+            sfs --> sfs[selected_state] === false
           */
 
 
           if (SelectedState !== event.selected[0].get('name') ) {
             if (event.selected.length > 0 && selectedFiltersStore['state'][stateMap[event.selected[0].get('name')]] !==false ) {
               console.log('florida should not be selected',selectedFiltersStore['state'][stateMap[event.selected[0].get('name')]],[stateMap[event.selected[0].get('name')]],selectedFiltersStore['state'])
-              
+
               setSelectedState(event.selected[0].get('name'));
               setIsStateSelected(true);
               setDistplayTooltip(true);
@@ -950,7 +945,8 @@ function MapComponent() {
   //const jsonData = require('./data.json');
 
   useEffect(() => {
-      const depature_data =  axios.get('http://18.216.87.63:3000/api/region_delay').then((response) => {
+      let url = "/.netlify/functions/proxy?route=region_delay";
+      const depature_data =  axios.get(url).then((response) => {
         parseData(response.data, regionDelayData).then(
           ()=>{
             setInitLoad(true);
@@ -977,8 +973,8 @@ function MapComponent() {
           tempGraph = {
             "graph1" : LevelOneGraphData["graph1"][stateMap[SelectedState]],
             "graph2" : LevelOneGraphData["graph2"][stateMap[SelectedState]]
-          } 
-        }        
+          }
+        }
         setGraphDataAdapeter(tempGraph)
       }
   }, [SelectedState,LevelZeroGraphData,LevelOneGraphData]);
@@ -993,7 +989,7 @@ function MapComponent() {
 
   //fetch the airport info from the api on start
   useEffect(() => {
-    const api_link  = "http://18.216.87.63:3000/api/airports"
+    const api_link = "/.netlify/functions/proxy?route=airports";
     if(airportCode===null){
       try{
         //get the airport info from api_link
@@ -1034,8 +1030,8 @@ function MapComponent() {
 
   useEffect(() => {
     console.log("data circle ",circleData)
-    dispatch(flight_actions.set_flight_circle_data(circleData)); 
-  
+    dispatch(flight_actions.set_flight_circle_data(circleData));
+
   }, [circleData]);
 
   useEffect(() => {
@@ -1054,8 +1050,7 @@ function MapComponent() {
     }
 
       dispatch(flight_actions.set_flight_selected_state(SelectedState));
-      //send a request to http://18.216.87.63:3000/api/state_info?state=SelectedState
-      let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
+      let url = "/.netlify/functions/proxy?state=" + stateMap[SelectedState];
       axios.get(url).then((res) => {
         if(res.data.length>0){
           //setShowGraphs(true);
