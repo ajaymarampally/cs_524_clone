@@ -16,6 +16,7 @@ interface FlightState {
   filteredData: any;
   chartData1: any;
   chartData2: any;
+  circleData:any;
 }
 
 const initialState: FlightState = {
@@ -35,7 +36,8 @@ const initialState: FlightState = {
     regionDelayData: {},
     filteredData: {},
     chartData1: {},
-    chartData2: {}
+    chartData2: {},
+    circleData:[]
 };
 
 
@@ -76,6 +78,9 @@ const flightSlice = createSlice({
     set_flight_chart_data2(state, action: PayloadAction<any>) {
       state.chartData2 = action.payload;
     },
+    set_flight_circle_data(state, action: PayloadAction<any>) {
+      state.circleData = action.payload;
+    },
     reset_flight_slice(state) {
       state.searchTerm = '';
       state.selectedToggle = 'departure';
@@ -94,6 +99,7 @@ const flightSlice = createSlice({
       state.filteredData = {};
       state.chartData1 = {};
       state.chartData2 = {};
+      state.circleData = [];
     }
   },
 });
