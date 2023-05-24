@@ -287,7 +287,7 @@
   position: absolute;
   top: 75px;
   width: 35%;
-  height: 45%;
+  height: 43%;
   background-color: #333333;
   display: block;
   margin: 10px;
@@ -299,9 +299,9 @@
 
 #graph__container_2 {
   position: absolute;
-  top: 50%;
+  top: 52%;
   width: 35%;
-  height: 45%;
+  height: 43%;
   background-color: #333333;
   display: block;
   margin: 10px;
@@ -340,7 +340,7 @@
   top: 75px;
   right: 8px;
   width: 35%;
-  max-height: 700px;
+  max-height: 750px;
   height: auto;
   background-color: #333333;
   color:#fff;
@@ -355,7 +355,7 @@
 
 #tooltip_linecharts{
   margin-top: 15px;
-  max-height: 650px;
+  max-height: 625px;
   overflow-x: auto;
 }
 
