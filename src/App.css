@@ -285,9 +285,9 @@
 
 #graph__container {
   position: absolute;
-  top: 5vh;
-  width: 40vw;
-  height: 40vh;
+  top: 10%;
+  width: 35%;
+  height: 30%;
   background-color: #333333;
   display: block;
   margin: 10px;
@@ -299,9 +299,9 @@
 
 #graph__container_2 {
   position: absolute;
-  top: 50vh;
-  width: 40vw;
-  height: 40vh;
+  top: 45%;
+  width: 35%;
+  height: 30%;
   background-color: #333333;
   display: block;
   margin: 10px;
