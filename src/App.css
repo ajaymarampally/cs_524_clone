@@ -340,7 +340,7 @@
   top: 75px;
   right: 8px;
   width: 35%;
-  max-height: 750px;
+  max-height: 70%;
   height: auto;
   background-color: #333333;
   color:#fff;
@@ -355,7 +355,7 @@
 
 #tooltip_linecharts{
   margin-top: 15px;
-  max-height: 625px;
+  max-height: 80%;
   overflow-x: auto;
 }
 
