@@ -10,12 +10,16 @@ exports.handler = async (event) => {
     };
   }
 
-  const { iata, state , route } = queryStringParameters;
+  const { iata_arrival,iata_departure, state , route } = queryStringParameters;
 
   let apiUrl;
-  if (iata) {
-    apiUrl = `http://18.216.87.63:3000/api/airport_level_departure?iata=${iata}`;
-  } else if (state) {
+  if (iata_arrival) {
+    apiUrl = `http://18.216.87.63:3000/api/airport_level_arrival?iata=${iata_arrival}`;
+  }
+  else if (iata_departure) {
+    apiUrl = `http://18.216.87.63:3000/api/airport_level_departure?iata=${iata_departure}`;
+  }
+    else if (state) {
     apiUrl = `http://18.216.87.63:3000/api/state_info?state=${state}`;
   } else if (route) {
     apiUrl = `http://18.216.87.63:3000/api/${route}`;
