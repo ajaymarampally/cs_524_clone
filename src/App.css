@@ -355,7 +355,7 @@
 
 #tooltip_linecharts{
   margin-top: 15px;
-  max-height: 80%;
+  max-height: 56%;
   overflow-x: auto;
 }
 
