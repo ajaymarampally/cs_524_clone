@@ -47,6 +47,7 @@ import { GroupedBarChart } from "./graphs/GroupedBarChart";
 import { VerticalBarChart } from "./graphs/VerticalBarChart";
 import { none } from "ol/centerconstraint";
 import { white } from "material-ui/styles/colors";
+import TooltipComponent from "./TooltipComponent";
 
 
 
@@ -1142,8 +1143,7 @@ function MapComponent() {
                       }
                     }
                   >Carrier Vs Delay</label>
-
-`                </div>
+                </div>
                 <PieChart />
                </div>
             </>
