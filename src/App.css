@@ -335,18 +335,21 @@
 	/* text-align: center; */
 }
 
-#tooltip__container {
-  background-color: #333;
-  color: #fff;
-  display: block;
-  height: auto;
-  margin: 10px;
-  max-height: 700px;
-  opacity: .5;
-  padding: 10px;
-  right: 8px;
+#tooltip__container{
+  position: absolute;
   top: 10vh;
+  right: 8px;
   width: 40vw;
+  max-height: 700px;
+  height: auto;
+  background-color: #333333;
+  color:#fff;
+  display: block;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #000;
+  border-radius: 15px;
+  opacity: 0.5;
   z-index: 2;
 }
 
