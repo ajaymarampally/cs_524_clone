@@ -340,7 +340,7 @@
   top: 75px;
   right: 8px;
   width: 35%;
-  max-height: 70%;
+  max-height: 800px;
   height: auto;
   background-color: #333333;
   color:#fff;
@@ -355,7 +355,7 @@
 
 #tooltip_linecharts{
   margin-top: 15px;
-  max-height: 56%;
+  max-height: 550px;
   overflow-x: auto;
 }
 
@@ -365,7 +365,7 @@
 
 
 
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: 1299px) {
   #no__display__container {
     display: block;
     display: flex;
@@ -379,7 +379,7 @@
   }
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 1300px) {
   #no__display__container {
     display: none;
   }
