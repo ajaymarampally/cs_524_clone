@@ -29,25 +29,20 @@ interface AirportCode {
   delay_mode: string;
 }
 
-const urlDep = '/api/airport_level_departure';
-const urlArr = '/api/airport_level_arrival';
-
 const LineChart = (props: AirportCode) => {
-  const mode = props.delay_mode==='arrival'?'Arrival':'Departure'; 
+  const mode = props.delay_mode==='arrival'?'Arrival':'Departure';
   const [displayToggle, setDisplayToggle] = useState<boolean>(false);
   const [dynamicLabels, setDynamicLabels] = useState<string[]>([]);
   const [delay, setDelay] = useState<number[]>([]);
   const [taxi, setTaxi] = useState<number[]>([]);
   const chartRef = useRef<HTMLDivElement>(null);
+  const [iataParam, setIataParam] = useState<string>('');
 
   async function fetchData(mode: string, code: string) {
-    let url = mode === 'arrival' ? urlArr : urlDep;
+    mode === 'arrival' ? setIataParam('iata_arrival') : setIataParam('iata_departure');
     try {
-      const response = await axios.get('http://18.216.87.63:3000' + url, {
-        params: {
-          iata: code,
-        },
-      });
+      let axios_url = '/.netlify/functions/proxy?' + iataParam + '=' + code;
+      const response = await axios.get(axios_url);
 
       if (response && response.data.length > 0) {
         const dynLabel: string[] = [];

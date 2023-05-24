@@ -39,7 +39,7 @@ const TooltipComponent= () => {
         const lAirports: Array<Array<string>> = [];
         cData.map((airport:any)=>{
             if (selectedToggle.startsWith(airport.direction))
-            {console.log("data Anal : ",airport);
+            {
             if (airport['size']==="large")
             {
                 lAirports.push([airport.iata_code,airport.airport_name])
@@ -53,7 +53,7 @@ const TooltipComponent= () => {
                 sAirports.push([airport.iata_code,airport.airport_name])
             }}
         });
-        
+
         setLargeAirportList(lAirports);
         setMediumAirportList(mAirports);
         setSmallAirportList(sAirports);
@@ -79,19 +79,19 @@ const TooltipComponent= () => {
     }, [circleData]);
 
     useEffect(() => {
-        if(value=='L')
+        if(value==='L')
         {
             setLargeFlag(true)
             setMediumFlag(false)
             setSmallFlag(false)
         }
-        else if(value=='M')
+        else if(value==='M')
         {
             setLargeFlag(false)
             setMediumFlag(true)
             setSmallFlag(false)
         }
-        else if(value=='S')
+        else if(value==='S')
         {
             setLargeFlag(false)
             setMediumFlag(false)
@@ -104,16 +104,16 @@ const TooltipComponent= () => {
             setSmallFlag(false)
         }
     }, [value]);
-    
+
     const onChange = ({ target: { value } }: RadioChangeEvent) => {
     setValue(value);
     };
-  
+
     return (
         <div id="tooltip__container">
             <h4>
             Airport Size :
-            </h4>  
+            </h4>
             <Radio.Group
             options={optionsWithDisabled}
             onChange={onChange}
@@ -123,24 +123,24 @@ const TooltipComponent= () => {
             />
 
             <div id="tooltip_linecharts">
-            { 
+            {
             largeFlag && largeAirportList.map((item) => (
                 <LineChart iata_code={item[0]} airport_name={item[1]}   delay_mode={selectedToggle}/>
             ))
             }
-            
-            { 
+
+            {
             mediumFlag && mediumAirportList.map((item) => (
                 <LineChart iata_code={item[0]} airport_name={item[1]}   delay_mode={selectedToggle}/>
             ))
-            }  
+            }
 
-            { 
+            {
             smallFlag && smallAirportList.map((item) => (
                 <LineChart iata_code={item[0]} airport_name={item[1]}   delay_mode={selectedToggle}/>
             ))
-            
-            }    
+
+            }
 
             </div>
 
