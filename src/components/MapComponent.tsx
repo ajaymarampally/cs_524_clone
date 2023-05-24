@@ -47,7 +47,7 @@ import { GroupedBarChart } from "./graphs/GroupedBarChart";
 import { VerticalBarChart } from "./graphs/VerticalBarChart";
 import { none } from "ol/centerconstraint";
 import { white } from "material-ui/styles/colors";
-
+import TooltipComponent from "./TooltipComponent"
 //d3.interpolateRgb.gamma(2.2)("red", "blue")(0.5)
 
 const useStyles = makeStyles(() => ({
@@ -82,6 +82,7 @@ function MapComponent() {
   const [circleData, setCircleData] = useState<Array<{[key:string]:any}>>([]);
   const [triggerRender,setTriggerRender] = useState<number>((0));
   const [lastClick,setLastClick] = useState<number[]>([]);
+  const [displayTooltip,setDistplayTooltip] = useState<boolean>(false);
 
   const [graphDataAdapter,setGraphDataAdapeter] = useState<{[key:string]:{[key:string]:{[key:string]:number}}}>({
     "graph1":{},//month VS delay
@@ -157,7 +158,7 @@ function MapComponent() {
     "2002-08": "August",
     "2002-09": "September",
     "2002-10": "October",
-    "2002-11": "November",
+    "2002-11": "November`",
     "2002-12": "December",
   };
 
@@ -167,6 +168,9 @@ function MapComponent() {
     dispatch(flight_actions.set_flight_filters(globalFilter));
   }, [globalFilter]);
 
+  useEffect(() => {
+    console.log("dafuq")
+  }, [showGraphs]);
 
   const handleFilterClick = () =>{
     setShowGraphs(!showGraphs);
@@ -909,6 +913,7 @@ function MapComponent() {
               
               setSelectedState(event.selected[0].get('name'));
               setIsStateSelected(true);
+              setDistplayTooltip(true);
 
               if (map.current) {
                 map.current.getView().fit(event.selected[0].getGeometry().getExtent(), {
@@ -923,6 +928,7 @@ function MapComponent() {
           // Handle the error here
           setSelectedState(null);
           setIsStateSelected(false);
+          setDistplayTooltip(false); // redux required
         }
       });
 
@@ -1005,7 +1011,7 @@ function MapComponent() {
   useEffect(() => {
     setTriggerRender(triggerRender+1);
     drawDelay(selectedToggle);
-
+    setDistplayTooltip(false)
   }, [selectedToggle]);
 
   useEffect(() => {
@@ -1027,8 +1033,15 @@ function MapComponent() {
   }, [triggerRender]);
 
   useEffect(() => {
+    console.log("data circle ",circleData)
+    dispatch(flight_actions.set_flight_circle_data(circleData)); 
+  
+  }, [circleData]);
+
+  useEffect(() => {
     console.log("selectedFiltersStore", selectedFiltersStore);
     calculateStateLevelDelay();
+    setDistplayTooltip(false)
   }, [selectedFiltersStore]);
 
   useEffect(() => {
@@ -1045,7 +1058,7 @@ function MapComponent() {
       let url = "http://18.216.87.63:3000/api/state_info?state=" + stateMap[SelectedState];
       axios.get(url).then((res) => {
         if(res.data.length>0){
-          setShowGraphs(true);
+          //setShowGraphs(true);
           setCircleData(res.data);
           //showTooltip(res.data);
           setTriggerRender(triggerRender+1);
@@ -1141,8 +1154,8 @@ function MapComponent() {
             </>
           )}
         </div>
-        <div id="tooltip__container" className="d-none">
-
+        <div>
+        {displayTooltip && <TooltipComponent/>}
         </div>
       </div>
     </>

@@ -204,7 +204,7 @@ export default function MyResponsivePie() {
                 anchor: 'right',
                 direction: 'column',
                 justify: false,
-                translateX: 50,
+                translateX: 100,
                 translateY: 0,
                 itemsSpacing: 22,
                 itemWidth: 100,

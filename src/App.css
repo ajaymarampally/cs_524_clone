@@ -286,7 +286,7 @@
 #graph__container {
   position: absolute;
   top: 80px;
-  width: 650px;
+  width: 500px;
   height: 430px;
   background-color: #333333;
   display: block;
@@ -300,7 +300,7 @@
 #graph__container_2 {
   position: absolute;
   top: 520px;
-  width: 650px;
+  width: 500px;
   height: 430px;
   background-color: #333333;
   display: block;
@@ -337,26 +337,31 @@
 
 #tooltip__container{
   position: absolute;
-  top: 100px;
-  right: 50px;
-  width: 500px;
+  top: 80px;
+  right: 8px;
+  width: 450px;
+  max-height: 700px;
   height: auto;
-  background-color: #fff;
-  border: 1px solid #000;
-  border-radius: 5px;
+  background-color: #333333;
+  color:#fff;
+  display: block;
+  margin: 10px;
   padding: 10px;
-  opacity: 0.6;
+  border: 1px solid #000;
+  border-radius: 15px;
+  opacity: 0.5;
   z-index: 2;
+}
+
+#tooltip_linecharts{
+  margin-top: 15px;
+  max-height: 550px;
+  overflow-x: auto;
 }
 
 #tooltip__container:hover{
   opacity: 1;
 }
 
-#tooltip__header{
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-  margin: 0 10px 0 10px;
-}
+
 
