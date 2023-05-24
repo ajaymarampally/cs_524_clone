@@ -337,9 +337,9 @@
 
 #tooltip__container{
   position: absolute;
-  top: 80px;
+  top: 10vh;
   right: 8px;
-  width: 450px;
+  width: 40vw;
   max-height: 700px;
   height: auto;
   background-color: #333333;
