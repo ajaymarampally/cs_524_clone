@@ -14,15 +14,15 @@ exports.handler = async (event) => {
 
   let apiUrl;
   if (iata_arrival) {
-    apiUrl = `http://54.198.114.87:3000/api/airport_level_arrival?iata=${iata_arrival}`;
+    apiUrl = `https://aq8jqh7q97.execute-api.us-east-1.amazonaws.com/dev/api/airport_level_arrival?iata=${iata_arrival}`;
   }
   else if (iata_departure) {
-    apiUrl = `http://54.198.114.87:3000/api/airport_level_departure?iata=${iata_departure}`;
+    apiUrl = `https://aq8jqh7q97.execute-api.us-east-1.amazonaws.com/dev/api/airport_level_departure?iata=${iata_departure}`;
   }
     else if (state) {
-    apiUrl = `http://54.198.114.87:3000/api/state_info?state=${state}`;
+    apiUrl = `https://aq8jqh7q97.execute-api.us-east-1.amazonaws.com/dev/api/state_info?state=${state}`;
   } else if (route) {
-    apiUrl = `http://54.198.114.87:3000/api/${route}`;
+    apiUrl = `https://aq8jqh7q97.execute-api.us-east-1.amazonaws.com/dev/api/${route}`;
   } else {
     return {
       statusCode: 400,
